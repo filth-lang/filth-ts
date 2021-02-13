@@ -1,7 +1,6 @@
 import {
-    ActiveMode,
-    QueryStack
-} from '../stack';
+    Filth
+} from '../';
 import {
     SType,
     StackValue,
@@ -29,9 +28,36 @@ import { evalList } from './list';
  * @param stack 
  * @param op 
  */
-export async function onDup<QS extends QueryStack>(stack: QS, op): AsyncInstResult {
+export async function onDup<QS extends Filth>(stack: QS, [,op]): AsyncInstResult {
     let val = stack.peek( op === 'over' ? 1 : 0);
     return [...val];
+}
+
+/**
+ * 
+ * ( n1 n2 -- n2 )
+ * @param stack 
+ * @param op 
+ */
+export function onNip<QS extends Filth>(stack: QS): InstResult {
+    let items = stack.items;
+    items.splice(-2,1);
+    stack.setItems(items);
+    return undefined;
+}
+
+/**
+ * 
+ * ( n1 n2 -- n2 n1 n2 )
+ * @param stack 
+ * @param op 
+ */
+export function onTuck<QS extends Filth>(stack: QS): InstResult {
+    let items = stack.items;
+    items.splice(-2, 0, items[items.length-1]);
+    // console.log('ok now', items);
+    stack.setItems(items);
+    return undefined;
 }
 
 /**
@@ -39,7 +65,7 @@ export async function onDup<QS extends QueryStack>(stack: QS, op): AsyncInstResu
  * 
  * ( n1 n2 n3 — n2 n3 n1 )
  */
-export async function onRot<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onRot<QS extends Filth>(stack: QS): AsyncInstResult {
     let items = stack.items;
 
     if (items.length < 3) {
@@ -55,10 +81,13 @@ export async function onRot<QS extends QueryStack>(stack: QS): AsyncInstResult {
 
 
 
-export async function onPrint<QS extends QueryStack>(stack: QS, val: StackValue): AsyncInstResult {
+export async function onPrint<QS extends Filth>(stack: QS, val: StackValue): AsyncInstResult {
     let msg;
     const [, op] = val;
-    if (op === '..') {
+    if (op === '.s') {
+        stack.print( stackToString(stack,false) );
+    }
+    else if (op === '..') {
         console.info('[onPrint][stack]', '(', stackToString(stack), ')');
     } else {
         // let msg =  await onToString(stack, [,'to_str!']);
@@ -69,7 +98,7 @@ export async function onPrint<QS extends QueryStack>(stack: QS, val: StackValue)
 }
 
 
-export function onFetchList<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+export function onFetchList<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     let left = stack.pop();
     let right = stack.pop();
     let arr = unpackStackValue(right, SType.List);
@@ -78,13 +107,13 @@ export function onFetchList<QS extends QueryStack>(stack: QS, val: StackValue): 
 }
 
 
-export function onRegexBuild(stack: QueryStack): InstResult {
+export function onRegexBuild(stack: Filth): InstResult {
     let val = stack.popValue();
     // console.log('[onRegexBuild]', new RegExp(val) );
     return [SType.Regex, new RegExp(val)];
 }
 
-export function onRegex(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onRegex(stack: Filth, [, op]: StackValue): InstResult {
     let regex: RegExp = stack.popValue();
     let val = stack.popValue();
 
@@ -124,7 +153,7 @@ export function onRegex(stack: QueryStack, [, op]: StackValue): InstResult {
     return [SType.Value, value];
 }
 
-export function onCompare(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onCompare(stack: Filth, [, op]: StackValue): InstResult {
     let left = JSON.stringify(stack.pop());
     let right = JSON.stringify(stack.pop());
 
@@ -133,7 +162,7 @@ export function onCompare(stack: QueryStack, [, op]: StackValue): InstResult {
     return [SType.Value, value];
 }
 
-export function onDateTime(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onDateTime(stack: Filth, [, op]: StackValue): InstResult {
     let dateA = stack.popValue();
     let dateB = stack.popValue();
 
@@ -145,66 +174,133 @@ export function onDateTime(stack: QueryStack, [, op]: StackValue): InstResult {
 /**
  * Places an undefined value on the stack
  */
-export function onUndefined(stack: QueryStack): InstResult {
+export function onUndefined(stack: Filth): InstResult {
     return [SType.Value, undefined];
 }
 
 
-export function onBitFieldOr(stack: QueryStack): InstResult {
+export function onBitFieldOr(stack: Filth): InstResult {
     let bf = stack.popValue();
     bf.type = TYPE_OR;
     return [SType.BitField, bf];
 }
 
-export function onAdd(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onAdd(stack: Filth, [, op]: StackValue): InstResult {
 
-    let left = stack.popValue();
     let right = stack.popValue();
+    let left = stack.popValue();
 
     let value = left;
     switch (op) {
         case '+': value = left + right; break;
         case '*': value = left * right; break;
+        case '/': value = left / right; break;
         case '-': value = left - right; break;
         case '%':
-            // Log.debug('[%]', left, right, left % right );
+        case 'mod':
             value = left % right;
             break;
         case '==':
-            // Log.debug(`[==]`, left, right, compare(left, right) );
-            // value = compare(left,right);
             value = left === right;
             break;
         case '!=':
-            // value = !compare(left,right);// left !== right; 
             value = left !== right;
             break;
         case '>': value = left > right; break;
         case '>=': value = left >= right; break;
         case '<': value = left < right; break;
         case '<=': value = left <= right; break;
+        case 'max': value = Math.max(left, right); break;
+        case 'min': value = Math.min(left, right); break;
     }
 
     return [SType.Value, value];
 }
 
-// function compare( left:any, right:any ){
-//     if( left === 'undefined' ){
-//         left = undefined;
-//     }
-//     if( right === 'undefined' ){
-//         right = undefined;
-//     }
-//     return left === right;
-// }
+export function onAbs(stack:Filth, [,op]:StackValue): InstResult {
+    let v = stack.popValue();
+    if( op === 'abs' ){
+        v = Math.abs(v);
+    } else {
+        v = -v;
+    }
+    return [SType.Value, v];
+}
 
 
-export function onUnexpectedError<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+
+export function onListOpen(stack: Filth): InstResult {
+    let sub = stack.setChild();
+
+    sub.addWords([
+        ['{', onMapOpen],
+        ['[', onListOpen],
+        [']', onListClose],
+        ['}', onUnexpectedError],
+    ], true);
+    sub.isUDWordsActive = false;
+    sub.isEscapeActive = false;
+    // Log.debug('[onListOpen]', 'stack', stack._idx, stack.isUDWordsActive, 'sub', sub._idx, sub.isUDWordsActive );
+
+    return undefined;
+}
+
+export function onListClose<QS extends Filth>(stack: QS): InstResult {
+    // Log.debug('[onListClose]', stack );
+    let val: StackValue = [SType.List, stack.items];
+    stack.restoreParent();
+    return val;
+}
+
+export function onMapOpen(stack: Filth): InstResult {
+
+    // Log.debug('[onMapOpen]', stack.items);//Object.keys(stack.words));
+
+    let sub = stack.setChild();
+
+    // add something which will interpret each push
+    sub.addWords([
+        ['{', onMapOpen],
+        ['[', onListOpen],
+        ['}', onMapClose],
+        [']', onUnexpectedError],
+    ], true);
+    // throw 'stop';
+    // (sub as any)._stack = stack;
+    // Log.debug('[onMapOpen]', {id:sub.id, parent:stack.id});
+    return undefined;
+}
+
+
+export function onMapClose<QS extends Filth>(stack: QS, val: StackValue): InstResult {
+    // if( stack.id === 158 ){
+    //     Log.debug('[onMapClose]', {id:stack.id, parent:stack._parent?.id}, stackToString(stack) );
+    //     Log.debug('[onMapClose]', stack);
+    // }
+
+    let map = stack.items.reduce((result, val, idx, array) => {
+        if (idx % 2 === 0) {
+            let key = unpackStackValue(val);
+            let mval = array[idx + 1];
+            // console.log('key!', key, array);
+            result[key] = mval === undefined ? [SType.Value, undefined] : mval;
+        }
+        return result;
+    }, {});
+    val = [SType.Map, map];
+    // Log.debug('[onMapClose]', {id:stack.id, parent:stack._parent.id});
+    // stack = stack._parent;
+    stack.restoreParent();
+    return val;
+}
+
+
+export function onUnexpectedError<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     throw new StackError(`unexpected word '${val}'`);
 }
 
 
-export function onValue<QS extends QueryStack>(stack: QS): InstResult {
+export function onValue<QS extends Filth>(stack: QS): InstResult {
     let val = stack.pop();
     let value = unpackStackValueR(val);
     if (val[0] === SType.List) {
@@ -222,7 +318,7 @@ export function onValue<QS extends QueryStack>(stack: QS): InstResult {
  * ( %{} -- vl )
  * @param stack 
  */
-export async function onSize<QS extends QueryStack>(stack: QS, [, op]: StackValue): AsyncInstResult {
+export async function onSize<QS extends Filth>(stack: QS, [, op]: StackValue): AsyncInstResult {
     let size = 0;
     // by default, the word consumes what it is measuring
     const isDes = op === 'size!';
@@ -240,7 +336,7 @@ export async function onSize<QS extends QueryStack>(stack: QS, [, op]: StackValu
     return [SType.Value, size];
 }
 
-export function onBuildMap<QS extends QueryStack>(stack: QS): InstResult {
+export function onBuildMap<QS extends Filth>(stack: QS): InstResult {
     let values: StackValue[];
     let left = stack.pop();
     let array = unpackStackValue(left, SType.List, false);
@@ -262,7 +358,7 @@ export function onBuildMap<QS extends QueryStack>(stack: QS): InstResult {
     return [SType.Map, map];
 }
 
-export async function onToString(stack: QueryStack, [, op]: StackValue): AsyncInstResult {
+export async function onToString(stack: Filth, [, op]: StackValue): AsyncInstResult {
     const isJoin = op === 'to_str!';
     let val = stack.pop();
     let str = '';
@@ -288,7 +384,7 @@ export async function onToString(stack: QueryStack, [, op]: StackValue): AsyncIn
  * 
  * [ hello world ] ' ' join -- 'hello world'
  */
-export async function onJoin(stack: QueryStack): AsyncInstResult {
+export async function onJoin(stack: Filth): AsyncInstResult {
     let joinStr = stack.pop();
     let list = stack.pop();
     let result;
@@ -309,7 +405,7 @@ export async function onJoin(stack: QueryStack): AsyncInstResult {
  * 
  * ( [] vl -- [] )
  */
-export function onPush<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+export function onPush<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     let rv = stack.pop();
     let lv = stack.pop();
 
@@ -330,7 +426,7 @@ export function onPush<QS extends QueryStack>(stack: QS, val: StackValue): InstR
  * 
  * @param stack 
  */
-export function onPop<QS extends QueryStack>(stack: QS, [, op]: StackValue): InstResult {
+export function onPop<QS extends Filth>(stack: QS, [, op]: StackValue): InstResult {
     const isPopRet = op == 'pop';
     const isPopSafe = op == 'pop?';
 
@@ -361,7 +457,7 @@ export function onPop<QS extends QueryStack>(stack: QS, [, op]: StackValue): Ins
 
 
 
-export function onSwap<QS extends QueryStack>(stack: QS): InstResult {
+export function onSwap<QS extends Filth>(stack: QS): InstResult {
     let left = stack.pop();
     let right = stack.pop();
 
@@ -371,28 +467,23 @@ export function onSwap<QS extends QueryStack>(stack: QS): InstResult {
     return undefined;
 }
 
-export function onDrop<QS extends QueryStack>(stack: QS): InstResult {
+export function onDrop<QS extends Filth>(stack: QS): InstResult {
     stack.pop();
     return undefined;
 }
 
 
-export function onClear<QS extends QueryStack>(stack: QS): InstResult {
+export function onClear<QS extends Filth>(stack: QS): InstResult {
     stack.clear();
     return undefined;
 };
 
-export function onVersion<QS extends QueryStack>(stack: QS): InstResult {
+export function onVersion<QS extends Filth>(stack: QS): InstResult {
     return [SType.Value, '1.0.0'];
 };
 
-// export function onLeave<QS extends QueryStack>(stack: QS, [,op]:StackValue): InstResult {
-//     const mode = op === 'leave' ? ActiveMode.Leave : ActiveMode.Break;
-//     stack.setActive( false, mode, 'onLeave' );
-//     return undefined;
-// }
 
-export function onAssertType<QS extends QueryStack>(stack: QS): InstResult {
+export function onAssertType<QS extends Filth>(stack: QS): InstResult {
     let value: StackValue = stack.pop();
     let type = unpackStackValue(value, SType.Value);
     value = stack.peek();
@@ -405,7 +496,7 @@ export function onAssertType<QS extends QueryStack>(stack: QS): InstResult {
     return undefined;
 }
 
-export function onPrintStack<QS extends QueryStack>(stack: QS): InstResult {
+export function onPrintStack<QS extends Filth>(stack: QS): InstResult {
     const vals = [...stack.items];
     print(0, `> stack ${stack._idx}`);
 
@@ -456,7 +547,7 @@ function printList(indent: number = 0, list: StackValue) {
 
 function print(indent, ...val) { console.log(`${' '.repeat(indent)}`, ...val); }
 
-// export function onAssert( stack:QueryStack, val:StackValue ):InstResult {
+// export function onAssert( stack:Filth, val:StackValue ):InstResult {
 //     // Log.debug('[assert]', val);
 //     [stack,val] = pop(stack);
 //     assert( val[1], `failed to assert value ${val}` );

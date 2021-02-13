@@ -1,5 +1,5 @@
 import { StackValue, InstResult, AsyncInstResult, SType } from "../types";
-import { QueryStack } from "../stack";
+import { Filth } from "../";
 
 
 /**
@@ -12,7 +12,7 @@ import { QueryStack } from "../stack";
  * @param stack 
  * @param param1 
  */
-export function onDefine(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onDefine(stack: Filth, [, op]: StackValue): InstResult {
     let wordFn;
     let wordVal = stack.pop();
     let value = stack.pop();
@@ -24,7 +24,7 @@ export function onDefine(stack: QueryStack, [, op]: StackValue): InstResult {
 
     // if (value[0] === SType.List && op !== 'let') {
     if (value[0] === SType.List && isUDFunc ) {
-        wordFn = async (stack: QueryStack): AsyncInstResult => {
+        wordFn = async (stack: Filth): AsyncInstResult => {
             
             // console.log('[onDefine]', 'wordFn', word, value[1] );
             // let wasActive = stack.isActive;

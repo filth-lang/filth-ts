@@ -1,4 +1,4 @@
-import { QueryStack } from "../stack";
+import { Filth } from "../";
 import { StackValue, AsyncInstResult, SType } from "../types";
 
 
@@ -9,7 +9,7 @@ import { StackValue, AsyncInstResult, SType } from "../types";
  * <else> <then> <condition> iif
  *
  */
-export async function onCondition(stack: QueryStack, [, op]: StackValue): AsyncInstResult {
+export async function onCondition(stack: Filth, [, op]: StackValue): AsyncInstResult {
     const isIfElse = op !== 'if';
     const condVal = stack.pop();
     const ifVal = stack.pop();
@@ -38,7 +38,7 @@ export async function onCondition(stack: QueryStack, [, op]: StackValue): AsyncI
     return undefined;
 }
 
-async function pushValue( stack:QueryStack, value:StackValue ){
+async function pushValue( stack:Filth, value:StackValue ){
     if( value[0] === SType.List ){
         await stack.pushValues(value[1]);
     } else {

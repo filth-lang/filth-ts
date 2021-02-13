@@ -1,13 +1,21 @@
 import { StackError, StackValue, SType } from "./types";
 import { stringify } from '@odgn/utils';
-import { isStackValue, QueryStack } from "./stack";
+import { Filth } from ".";
 
 
 export interface ToStringOptions {
     flat?: boolean;
 }
 
-export function stackToString(stack: QueryStack, reverse:boolean = true, items:StackValue[] = undefined): string {
+
+
+export function isStackValue(value: any): boolean {
+    return Array.isArray(value) && value.length == 2;
+}
+
+
+
+export function stackToString(stack: Filth, reverse:boolean = true, items:StackValue[] = undefined): string {
     items = items ?? stack.items;
     let strs = items.map(val => valueToString(val));
     if( reverse ){
@@ -92,3 +100,33 @@ export function unpackStackValue(val: StackValue, assertType: (SType | SType[]) 
 export function unpackStackValueR(val: StackValue, assertType: SType = SType.Any) {
     return unpackStackValue(val, assertType, true);
 }
+
+
+
+
+export function assertStackSize(stack: Filth, expected: number, msg?: string) {
+    const len = stack.items.length;
+    if (len < expected) {
+        if (msg === undefined) {
+            msg = `expected stack size ${expected}, actual: ${len}`;
+        }
+        throw new Error(msg);
+    }
+}
+
+export function assertStackValueType(stack: Filth, index: number, opType: string, argType?: any) {
+    // Log.debug('[assertStackValueType]', 'argType', argType );
+    const len = stack.items.length;
+    const idx = len - 1 - index;
+    if (idx < 0) {
+        throw new Error(`value out of bounds: -${index + 1} : ${len}`);
+    }
+    const value: StackValue = stack.items[idx];
+    if (value[0] !== opType) {
+        throw new Error(`expected value of type ${opType} at index ${idx} : got ${value[0]}`);
+    }
+    if (argType !== undefined && typeof value[1] !== argType) {
+        throw new Error(`expected arg of type ${argType} at index ${idx} : got ${typeof value[1]}`);
+    }
+}
+

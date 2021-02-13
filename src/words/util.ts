@@ -1,4 +1,4 @@
-import { QueryStack } from "../stack";
+import { Filth } from "../";
 import { isBoolean } from "@odgn/utils";
 import { AsyncInstResult, InstResult, StackError, StackValue, SType } from "../types";
 
@@ -46,6 +46,6 @@ export function compareValues(left: StackValue, right: StackValue): boolean {
 
 
 
-export function onArgError(stack: QueryStack, val: StackValue): InstResult {
+export function onArgError(stack: Filth, val: StackValue): InstResult {
     throw new StackError('invalid argument');
 }

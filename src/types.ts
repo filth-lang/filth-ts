@@ -1,4 +1,4 @@
-import { QueryStack } from "./stack";
+import { Filth } from ".";
 
 export enum SType {
     Value = '%v',
@@ -35,8 +35,8 @@ export type AsyncInstResult = Promise<InstResult>;
 export type StackValue = [SType] | [SType, any];
 
 export type WordFn = SyncWordFn | AsyncWordFn;
-export type SyncWordFn = (stack: QueryStack, val: StackValue) => InstResult;
-export type AsyncWordFn = (stack: QueryStack, val: StackValue) => Promise<InstResult>;
+export type SyncWordFn = (stack: Filth, val: StackValue) => InstResult;
+export type AsyncWordFn = (stack: Filth, val: StackValue) => Promise<InstResult>;
 
 export type WordSpec = [ string, WordFn|StackValue, ...(SType|string)[] ];
 // export type WordSpec = [ (string|string[]), WordFn|StackValue, ...(SType|string)[] ];
@@ -48,7 +48,7 @@ export interface Words {
 }
 
 
-export interface QueryStackDefs {
+export interface FilthDefs {
     [def: string]: StackValue;
 }
 

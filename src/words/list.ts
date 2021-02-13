@@ -1,36 +1,10 @@
-import { onUnexpectedError } from ".";
-import { QueryStack } from "../stack";
+import { Filth } from "../";
 import { isEqual } from "@odgn/utils";
 import { AsyncInstResult, InstResult, StackError, StackValue, SType } from "../types";
 import { unpackStackValue, unpackStackValueR } from "../util";
-import { onMapOpen } from "./map";
 import { isTruthy } from "./util";
 
 
-
-
-export function onListOpen(stack: QueryStack): InstResult {
-    let sub = stack.setChild();
-
-    sub.addWords([
-        ['{', onMapOpen],
-        ['[', onListOpen],
-        [']', onListClose],
-        ['}', onUnexpectedError],
-    ], true);
-    sub.isUDWordsActive = false;
-    sub.isEscapeActive = false;
-    // Log.debug('[onListOpen]', 'stack', stack._idx, stack.isUDWordsActive, 'sub', sub._idx, sub.isUDWordsActive );
-
-    return undefined;
-}
-
-export function onListClose<QS extends QueryStack>(stack: QS): InstResult {
-    // Log.debug('[onListClose]', stack );
-    let val: StackValue = [SType.List, stack.items];
-    stack.restoreParent();
-    return val;
-}
 
 
 /**
@@ -38,7 +12,7 @@ export function onListClose<QS extends QueryStack>(stack: QS): InstResult {
  * @param stack 
  * @param val 
  */
-export function onAddList<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+export function onAddList<QS extends Filth>(stack: QS, val: StackValue): InstResult {
 
     let left = stack.pop();
     let right = stack.pop();
@@ -67,7 +41,7 @@ export function onAddList<QS extends QueryStack>(stack: QS, val: StackValue): In
 
 
 
-export async function onListSpread<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onListSpread<QS extends Filth>(stack: QS): AsyncInstResult {
     let val = stack.pop();
     let value = unpackStackValueR(val, SType.List).map(v => [SType.Value, v]);
 
@@ -83,7 +57,7 @@ export async function onListSpread<QS extends QueryStack>(stack: QS): AsyncInstR
  * 
  * @param stack 
  */
-export async function onListEval<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onListEval<QS extends Filth>(stack: QS): AsyncInstResult {
     let val = stack.pop();
     let list = unpackStackValue(val, SType.List);
 
@@ -95,7 +69,7 @@ export async function onListEval<QS extends QueryStack>(stack: QS): AsyncInstRes
  * @param stack 
  * @param list 
  */
-export async function evalList<QS extends QueryStack>(stack: QS, list: StackValue[]): AsyncInstResult {
+export async function evalList<QS extends Filth>(stack: QS, list: StackValue[]): AsyncInstResult {
     let mapStack = stack.setChild(stack);
 
     await mapStack.pushValues(list);
@@ -119,7 +93,7 @@ export async function evalList<QS extends QueryStack>(stack: QS, list: StackValu
  * @param stack 
  * @param val 
  */
-export function onGather<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+export function onGather<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     let values: StackValue[];
     let first = stack.pop();
     let type: SType = first[0]; //unpackStackValue(first, SType.Value);
@@ -142,7 +116,7 @@ export function onGather<QS extends QueryStack>(stack: QS, val: StackValue): Ins
  * @param stack 
  * @param val 
  */
-export function onConcat<QS extends QueryStack>(stack: QS, val: StackValue): InstResult {
+export function onConcat<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     let a = stack.pop();
     let b = stack.pop();
 
@@ -156,7 +130,7 @@ export function onConcat<QS extends QueryStack>(stack: QS, val: StackValue): Ins
 
 
 
-export async function onFilter<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onFilter<QS extends Filth>(stack: QS): AsyncInstResult {
     let fn: StackValue = stack.pop();
     let list = stack.pop();
 
@@ -187,7 +161,7 @@ export async function onFilter<QS extends QueryStack>(stack: QS): AsyncInstResul
     return [SType.List, accum];
 }
 
-export async function onMap<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onMap<QS extends Filth>(stack: QS): AsyncInstResult {
     let right = stack.pop();
     let left = stack.pop();
 
@@ -216,7 +190,7 @@ export async function onMap<QS extends QueryStack>(stack: QS): AsyncInstResult {
     return [SType.List, result];
 }
 
-export async function onReduce<QS extends QueryStack>(stack: QS): AsyncInstResult {
+export async function onReduce<QS extends Filth>(stack: QS): AsyncInstResult {
 
     let right = stack.pop();
     let accum = stack.pop();
@@ -249,7 +223,7 @@ export async function onReduce<QS extends QueryStack>(stack: QS): AsyncInstResul
  * ( %[] -- %[] )
  * @param stack 
  */
-export function onUnique<QS extends QueryStack>(stack: QS): InstResult {
+export function onUnique<QS extends Filth>(stack: QS): InstResult {
     let val = stack.pop();
     let array = unpackStackValueR(val, SType.List);
     return [SType.List, [...new Set([...array].sort())].map(v => [SType.Value, v])];
@@ -263,7 +237,7 @@ export function onUnique<QS extends QueryStack>(stack: QS): InstResult {
  * @param stack 
  * @param param1 
  */
-export function onDiff(stack: QueryStack, [,op]:StackValue): InstResult {
+export function onDiff(stack: Filth, [,op]:StackValue): InstResult {
     const isDiff = op === 'diff' || op === 'diff!';
     const isInter = op === 'intersect' || op === 'intersect!';
     const isDes = op.endsWith('!');

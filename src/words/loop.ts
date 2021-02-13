@@ -1,5 +1,5 @@
 import { StackValue, InstResult, AsyncInstResult, SType, StackError } from "../types";
-import { QueryStack } from "../stack";
+import { Filth } from "../";
 import { unpackStackValue, unpackStackValueR } from "../util";
 
 
@@ -8,7 +8,7 @@ import { unpackStackValue, unpackStackValueR } from "../util";
  * @param stack 
  * @param param1 
  */
-export async function onLoop(stack: QueryStack, [, op]: StackValue): AsyncInstResult {
+export async function onLoop(stack: Filth, [, op]: StackValue): AsyncInstResult {
     let val = stack.pop();
     let value = unpackStackValue(val, SType.List);
     const wasActive = stack.isActive;

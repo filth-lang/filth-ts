@@ -1,11 +1,11 @@
 import { SType, StackError, AsyncInstResult, StackValue, InstResult } from "../types";
-import { unpackStackValue, unpackStackValueR, stackToString } from "../util";
+import { unpackStackValue, unpackStackValueR, stackToString, isStackValue } from "../util";
 import { isObject } from "@odgn/utils";
-import { isStackValue, QueryStack } from "../stack";
+import { Filth } from "../";
 import Jsonpointer from 'jsonpointer';
 
 
-export function onPluck(stack: QueryStack, [, op]: StackValue): InstResult {
+export function onPluck(stack: Filth, [, op]: StackValue): InstResult {
 
     // console.log('[onPluck]', stackToString(stack) );
     const isDes = op === 'pluck!';
