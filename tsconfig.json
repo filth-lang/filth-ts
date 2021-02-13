@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "es2018",
+      "moduleResolution": "Node",
+      "esModuleInterop": true,
+      "lib": ["es2018", "es2019", "es2020", "esnext", "dom"],
+      "outDir": "./dist",
+      "declaration": true,
+    },
+    "include": [
+      "src/index.ts"
+    ]
+  }
