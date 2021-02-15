@@ -4,7 +4,7 @@ export enum SType {
     Value = '%v',
     List = '%[]',
     Map = '%{}',
-    Function = '%()',
+    Word = '%w',
     BitField = '%bf',
     // Entity = '%e',
     // EntitySet = '%es',
@@ -38,8 +38,8 @@ export type WordFn = SyncWordFn | AsyncWordFn;
 export type SyncWordFn = (stack: Filth, val: StackValue) => InstResult;
 export type AsyncWordFn = (stack: Filth, val: StackValue) => Promise<InstResult>;
 
+// word name, word fn, word arg types
 export type WordSpec = [ string, WordFn|StackValue, ...(SType|string)[] ];
-// export type WordSpec = [ (string|string[]), WordFn|StackValue, ...(SType|string)[] ];
 
 export type WordEntry = [ WordFn, SType[] ];
 

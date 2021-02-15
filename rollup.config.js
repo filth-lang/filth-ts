@@ -3,7 +3,7 @@ import typescript from 'rollup-plugin-typescript2';
 import { terser } from 'rollup-plugin-terser';
 import NodeResolve from '@rollup/plugin-node-resolve';
 import Replace from '@rollup/plugin-replace';
-import CommonJS from '@rollup/plugin-commonjs';
+// import CommonJS from '@rollup/plugin-commonjs';
 
 
 const environment = process.env.NODE_ENV || 'development';
@@ -72,7 +72,7 @@ function build({ dir = 'dist', format = 'esm', input, output: outputFile = 'inde
 
     let globals = [];
 
-    ext = format === 'esm' ? 'mjs' : 'cjs';
+    ext = format === 'esm' ? 'mjs' : 'js';
 
     let output = {
         format,
@@ -124,9 +124,16 @@ export default [
         input: 'src/index.ts',
         output: 'index.mjs',
         format: 'esm',
-        minify: false
+        // minify: true
         // output: [{ dir: 'dist', format: 'esm', esModule: true, entryFileNames: '[name].mjs' }]
     },
+    {
+        ...config,
+        input: 'src/index.ts',
+        output: 'index.js',
+        format: 'cjs',
+        // minify: true
+    }
     // {
     //     ...config,
     //     output: [{ dir: 'dist', format: 'cjs', esModule: false, entryFileNames: '[name].js' }]

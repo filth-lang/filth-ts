@@ -69,18 +69,10 @@ export function parse(context:Context, input:string):Context {
     context = context || createContext();
     context.length = context.pos + input.length;
 
-    // const len = (context.pos + input.length);
-    // console.log('dammit', context.pos, context.length );
-
-    // let it = 0;
     while (context.pos < context.length ) {
-        // it++;
         context = process(context, input);
-        // console.log('proc', context.pos, len );
-        // if( it > 100 ){ throw new Error('over')}
     }
 
-    // context.position += input.length;
     return context;
 }
 
@@ -142,7 +134,7 @@ function process(context:Context, input:string):Context {
             if( isNewline || char === ' ' ){
                 // console.log('endof', markPosition, buffer );
                 output.push([
-                    parseValue(trimRight(buffer)),
+                    parseValue(buffer.trimEnd()),
                     markPosition,
                     line
                 ]);
@@ -162,7 +154,7 @@ function process(context:Context, input:string):Context {
                     // case '\n':
                         // console.log('but what', char, buffer, mode);
                         output.push([
-                            parseValue(trimRight(buffer)),
+                            parseValue(buffer.trimEnd()),
                             markPosition,
                             line
                         ]);
@@ -184,7 +176,6 @@ function process(context:Context, input:string):Context {
 
                 output.push([
                     trimMultiQuote(buffer, offset),
-                    // trimRight(buffer.substring(0,buffer.length-2), '\n'),
                     markPosition,
                     line
                 ]);
@@ -194,7 +185,7 @@ function process(context:Context, input:string):Context {
             if( char === ' ' || isNewline || char === ',' || char === ':' || char === ']' || char === '}' ){
                 // console.log('end value', mode, pos, char);
                 // mode = set(mode, MODE_MAYBE_VALUE);
-                let value = parseValue(trimRight(buffer));
+                let value = parseValue(buffer.trimEnd());
                 output.push([value,markPosition,line]);
                 mode = unset(mode, MODE_VALUE);
                 // console.log('end val', char, value, pos);
@@ -302,7 +293,7 @@ function process(context:Context, input:string):Context {
 
 function trimMultiQuote(buffer:string, headerOffset:number) {
     // trim all whitespace up to the first character
-    buffer = trimLeft(buffer.substring(0, buffer.length - 2));
+    buffer = buffer.substring(0, buffer.length - 2).trimStart();
     let len,
         ii,
         lines = buffer.split('\n');
@@ -316,27 +307,27 @@ function trimMultiQuote(buffer:string, headerOffset:number) {
     return buffer;
 }
 
-function modeToString(mode:number) {
-    if ( isSet(mode, MODE_COMMENT) ) {
-        return 'comment';
-    }
-    if (isSet(mode, MODE_MULTI_COMMENT)) {
-        return 'multiComment';
-    }
-    if ( isSet(mode, MODE_VALUE) ) {
-        return 'value';
-    }
-    if ( isSet(mode, MODE_QUOTE) ) {
-        return 'quote';
-    }
-    if ( isSet(mode, MODE_MAYBE_QUOTE) ) {
-        return 'quote?';
-    }
-    if ( isSet(mode, MODE_MULTI_QUOTE) ) {
-        return 'multiQuote';
-    }
-    return 'idle';
-}
+// function modeToString(mode:number) {
+//     if ( isSet(mode, MODE_COMMENT) ) {
+//         return 'comment';
+//     }
+//     if (isSet(mode, MODE_MULTI_COMMENT)) {
+//         return 'multiComment';
+//     }
+//     if ( isSet(mode, MODE_VALUE) ) {
+//         return 'value';
+//     }
+//     if ( isSet(mode, MODE_QUOTE) ) {
+//         return 'quote';
+//     }
+//     if ( isSet(mode, MODE_MAYBE_QUOTE) ) {
+//         return 'quote?';
+//     }
+//     if ( isSet(mode, MODE_MULTI_QUOTE) ) {
+//         return 'multiQuote';
+//     }
+//     return 'idle';
+// }
 
 function createContext():Context {
     return {
@@ -354,19 +345,6 @@ function createContext():Context {
     };
 }
 
-
-/**
- * Trims whitespace from the left of a string
- * @param str 
- */
-function trimLeft(str:string) {
-    str = str.replace(/^\s\s*/, '');
-    let ws = /\s/,
-        ii = str.length;
-    while (ws.test(str.charAt(--ii)));
-    return str.slice(0, ii + 1);
-}
-
 /**
  * Trims whitespace from the left side of a string up to the offset
  * @param {*} str
@@ -379,22 +357,6 @@ function trimLeftMax(str:string, offset:number) {
     return str.substring(ii - 1);
 }
 
-/**
- * Trims whitespace from the right of a string
- * 
- * @param str 
- * @param ch 
- */
-function trimRight(str:string, ch:string = ' ') {
-    let ii;
-    for (ii = str.length - 1; ii >= 0; ii--) {
-        if (ch != str.charAt(ii)) {
-            str = str.substring(0, ii + 1);
-            break;
-        }
-    }
-    return str;
-}
 
 function parseValue(str:string) {
     return parseJSON(str, str);

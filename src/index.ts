@@ -306,45 +306,18 @@ export class Filth {
                 const pr = word.charAt(0);
                 if (len > 1 && pr === '$' || (len > 1 && pr === '%') ) {
                     let sub = word.substring(1);
-                    // Log.debug('[push]', word, this._idx, isInteger(sub), this.isUDWordsActive );
                     if (isInteger(sub)) {
                         const idx = toInteger(sub);
-                        // Log.debug('[push]', '$ pr', word, this.toString() );
                         
                         value = pr === '$' ? this.pop(idx) : this.peek(idx);
-                        // Log.debug('[push]', '$ pr', word, this.toString() );
                     }
                     else if (this.isUDWordsActive) {
                         handler = this.getUDWord(sub);
-                        // Log.debug('[push]', 'getUDWord', sub, handler);
-
                     }
-                    // Log.debug('[push]', '$ po', word, wordStack.items, wordStack.id);
-                    // Log.debug('[push]', '$', idx, 'pop', value, stack.id, wordStack.id);
                 }
 
                 else {
-                    // try for a user defined word - these are global
-                    // if( len > 1 && word.charAt(0) === '@' ){
-                    //     handler = this.getUDWord( word.substring(1) );
-                    // }
-
-                    // try for a regular word - these are scoped to the current stack
-                    // if( handler === undefined ){
                     handler = this.getWord(value);
-                    // Log.debug('[push][getWord]', value, handler );
-                    // if( this.debug && word === 'count' ) Log.debug( this.words );
-                    // if( this.debug && word === 'count' ) throw new StackError('stop');
-                    // }
-
-                    // Log.debug('[push]', 'word', stack?.id, wordStack?.id );
-                    // handler = this.getWord(value);
-                    // if( value[1] === 'dstId' ){
-                    //     let wh = this.getUDWord(value[1]);
-                    //     Log.debug('[push]', 'word?', value);
-                    //     Log.debug('[push]', 'word', stackIndex, handler, wh );
-                    // }
-                    // DLog(stack, '[push]', 'word', stack.id, wordStack.id, value );
                 }
 
                 // restore back to original index
@@ -352,29 +325,19 @@ export class Filth {
             }
         }
 
-        // if( word === 'leave' ){
-        // Log.debug('[push]', word, handler );
-        // }
-
-        // Log.debug('[push]', 'pre', { isActive: this.isActive, isEscapeActive: this.isEscapeActive }, value, handler);
-
         if (handler !== undefined) {
             try {
                 if (isStackValue(handler)) {
                     value = (handler as any);
-                }
-                else {
-
-                    let handlerVal = value;
-                    // Log.debug('[push]', 'pre', this.isActive, value);
-                    let result = handler(this, value);
-                    value = isPromise(result) ? await result : result as InstResult;
-                    this.focus();
-                    if (value === undefined) {
-                        // Log.debug('[push]', 'post', this.isActive, this.items );
+                    if( value[0] === SType.Word ){
+                        await this.pushValues(value[1]);
+                        value = undefined;
                     }
                 }
-                // if( value && this.debug ) Log.debug('[push]', value); 
+                else {
+                    let result = handler(this, value);
+                    value = isPromise(result) ? await result : result as InstResult;
+                }
             } catch (err) {
                 if( err instanceof StackError ){
                     throw err;
@@ -390,9 +353,6 @@ export class Filth {
         if (value !== undefined) {
             this.items.push(value);
         }
-        // Log.debug('[push]', word, value, handler, this.isActive );
-        // Log.debug('[push]', this.items );
-
         return value;
     }
 
@@ -409,16 +369,9 @@ export class Filth {
     }
 
     async pushValues(values: StackValue[], options: PushOptions = {}): Promise<number> {
-        // let ovalues: StackValue[] = [];
-        const ignoreActive = options.ignoreActive ?? false;
-        // const ticket = options.ticket;
-        const debug = options.debug;
-
+        
         let count = 0;
-        // let revertActive = false;
-        // Log.debug('[pushValues$]', this.isActive, {run,ticket}, values);
-        // let startActive = this.isActive;
-
+        
         // record pushed values so we can report errors better
         let pushed = [];
 
@@ -427,10 +380,6 @@ export class Filth {
                 await this.push(value, options);
                 count++;
                 pushed.push(value);
-            }
-
-            if (ignoreActive) {
-                // this.isActive = true;
             }
 
         } catch (err) {

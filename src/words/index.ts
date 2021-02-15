@@ -88,11 +88,11 @@ export async function onPrint<QS extends Filth>(stack: QS, val: StackValue): Asy
         stack.print( stackToString(stack,false) );
     }
     else if (op === '..') {
-        console.info('[onPrint][stack]', '(', stackToString(stack), ')');
+        stack.print('(', stackToString(stack), ')');
     } else {
         // let msg =  await onToString(stack, [,'to_str!']);
         let msg = stack.pop();
-        console.info('[onPrint]', unpackStackValueR(msg));
+        stack.print(unpackStackValueR(msg));
     }
     return undefined;
 }

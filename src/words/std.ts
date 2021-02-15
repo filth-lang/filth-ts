@@ -1,5 +1,4 @@
 import { onAbs, onAdd, onAssertType, onBuildMap, onClear, onCompare, onDateTime, onDrop, onDup, onFetchList, onJoin, onListOpen, onMapOpen, onNip, onPop, onPrint, onPrintStack, onPush, onRegex, onRegexBuild, onRot, onSize, onSwap, onToString, onTuck, onUndefined, onUnexpectedError } from ".";
-import { Filth } from "..";
 import { SType, WordSpec } from "../types";
 import { onCondition } from "./cond";
 import { onDefine } from "./define";
