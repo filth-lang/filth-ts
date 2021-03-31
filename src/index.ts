@@ -58,12 +58,12 @@ export class Filth {
 
     printFn: PrintFn
 
-    constructor(options:FilthOptions = {}) {
+    constructor(options: FilthOptions = {}) {
         this._stacks = [createInst()];
         this.printFn = options.print ?? undefined;
-        
+
         this.addWords(options.words ?? stdWords);
-        
+
     }
 
     /**
@@ -79,7 +79,7 @@ export class Filth {
     get words(): Words {
         return this._stacks[this._idx].words;
     }
-    
+
     /**
      * 
      */
@@ -123,9 +123,9 @@ export class Filth {
      * 
      * @param args 
      */
-    print( ...args ){
-        if( this.printFn ){
-            this.printFn( args.join(' ') );
+    print(...args) {
+        if (this.printFn) {
+            this.printFn(args.join(' '));
         }
     }
 
@@ -200,14 +200,14 @@ export class Filth {
         return this;
     }
 
-    
+
     /**
      * Parses a string and pushes the found values to the stack
      * 
      * @param input 
      */
-    async eval( input:string ){
-        const insts = tokenizeString(input,{returnValues:true});
+    async eval(input: string) {
+        const insts = tokenizeString(input, { returnValues: true });
         await this.pushValues(insts);
         return this;
     }
@@ -216,7 +216,7 @@ export class Filth {
     /**
      * Pushes a stack value onto the stack
      */
-     async push(input: any | StackValue, options?: PushOptions): Promise<StackValue> {
+    async push(input: any | StackValue, options?: PushOptions): Promise<StackValue> {
         let value: StackValue;
         let handler: WordFn;
         // const ticket = options.ticket;
@@ -227,10 +227,10 @@ export class Filth {
         // Log.debug('[push]', 'pre', this.isActive, value);
 
         if (this.isEscapeActive) {
-            if (word == '@!' ) {
+            if (word == '@!') {
                 this.isActive = false;
                 // this.setActive(false, ActiveMode.Return, word);
-            } else if (word == '@>' ) {
+            } else if (word == '@>') {
                 this.isActive = true;
                 // this.setActive(true, ActiveMode.Active, word);
                 return value;
@@ -269,15 +269,15 @@ export class Filth {
             }
 
             // escape char for values which might otherwise get processed as words
-            if ( len > 1 && word.charAt(0) === '*') {
+            if (len > 1 && word.charAt(0) === '*') {
                 word = word.substring(1);
                 value = [SType.Value, word] as any;
                 evalWord = evalEscape;// false;
-                
+
                 // if( debug ) Log.debug('[push]', value, 'escaped');
             }
 
-            if( evalWord ) {
+            if (evalWord) {
                 // save the current stack
                 let stackIndex = this._idx;
 
@@ -293,12 +293,22 @@ export class Filth {
                 // words beginning with $ refer to offsets on the root stack if they are integers,
                 // or user defined words
                 const pr = word.charAt(0);
-                if (len > 1 && pr === '$' || (len > 1 && pr === '%') ) {
+                // console.log('REM', pr, word);
+                if (len > 1 && (pr === '$' || pr === '%' || pr === '~')) {
                     let sub = word.substring(1);
                     if (isInteger(sub)) {
                         const idx = toInteger(sub);
-                        
-                        value = pr === '$' ? this.pop(idx) : this.peek(idx);
+
+                        // console.log(pr, idx);
+                        if (pr === '~') {
+                            this.pop(idx);
+                            value = undefined;
+                        }
+                        else {
+                            value = pr === '$' ?
+                                this.pop(idx)
+                                : this.peek(idx);
+                        }
                     }
                     else if (this.isUDWordsActive) {
                         handler = this.getUDWord(sub);
@@ -318,7 +328,7 @@ export class Filth {
             try {
                 if (isStackValue(handler)) {
                     value = (handler as any);
-                    if( value[0] === SType.Word ){
+                    if (value[0] === SType.Word) {
                         await this.pushValues(value[1]);
                         value = undefined;
                     }
@@ -328,7 +338,7 @@ export class Filth {
                     value = isPromise(result) ? await result : result as InstResult;
                 }
             } catch (err) {
-                if( err instanceof StackError ){
+                if (err instanceof StackError) {
                     throw err;
                 }
                 let e = new StackError(`${err.message}`);
@@ -361,9 +371,9 @@ export class Filth {
     }
 
     async pushValues(values: StackValue[], options: PushOptions = {}): Promise<number> {
-        
+
         let count = 0;
-        
+
         // record pushed values so we can report errors better
         let pushed = [];
 
@@ -380,7 +390,7 @@ export class Filth {
             // }
             let dump = stackToString(this, true, pushed.slice(1).slice(-5));
             let msg = err.message;
-            if( msg.indexOf(': (') == -1 ){
+            if (msg.indexOf(': (') == -1) {
                 msg = `${err.message}: (${dump})`;
             } else {
                 throw err;

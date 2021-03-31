@@ -54,16 +54,16 @@ stack-based language and programming environment. It's also not used by NASA.
 # Naturally, as we work with the stack, we'll want some useful methods:
 
 3 dup -          # duplicate the top item (1st now equals 2nd): 3 - 3
-2 5 swap /       # swap the top with the second element:        5 / 2
+3 %0 -          # duplicate the top item (1st now equals 2nd): 3 - 3
+2 5 $1 /         # swap the top with the second element:        5 / 2
 6 4 5 rot .s     # rotate the top 3 elements:                   4 5 6
-4 0 drop 2 /     # remove the top item (don't print to screen):  4 / 2
-1 2 3 nip .s     # remove the second item (similar to drop):    1 3
+6 4 5 $2 .s      # rotate the top 3 elements:                   4 5 6
+4 0 ~0 2 /     # remove the top item (don't print to screen):  4 / 2
+1 2 3 ~1 .s     # remove the second item (similar to drop):    1 3
 
 # ---------------------- More Advanced Stack Manipulation ----------------------
 
-1 2 3 4 tuck   # duplicate the top item below the second slot:      1 2 4 3 4 ok
-1 2 3 4 over   # duplicate the second item to the top:             1 2 3 4 3 ok
-1 2 3 4 %1     # duplicate the item at that offset to the top:     1 2 3 4 3 ok
+1 2 3 4 %1     # duplicate the second item to the top:             1 2 3 4 3 ok
 1 2 3 4 $3     # move the item at that offset to the top:          2 3 4 1 ok
 
 # When referring to stack indexes, they are zero-based.
@@ -75,7 +75,6 @@ stack-based language and programming environment. It's also not used by NASA.
 
 # We can view what a word does too:
 *square see    # [ dup * ] ok
-see square     # : square dup * ; ok
 
 # -------------------------------- Conditionals --------------------------------
 
