@@ -9,7 +9,7 @@ import { StackValue, AsyncInstResult, SType } from "../types";
  * <else> <then> <condition> iif
  *
  */
-export async function onCondition(stack: Filth, [, op]: StackValue): AsyncInstResult {
+ export async function onCondition(stack: Filth, [, op]: StackValue): AsyncInstResult {
     const isIfElse = op !== 'if';
     const condVal = stack.pop();
     const ifVal = stack.pop();
@@ -44,4 +44,22 @@ async function pushValue( stack:Filth, value:StackValue ){
     } else {
         return stack.push(value);
     }
+}
+
+
+export async function onLogicalOp(stack:Filth, [,op]:StackValue ): AsyncInstResult {
+    const left = stack.popValue();
+    const right = stack.popValue();
+
+    if( op === 'and' ){
+        return [SType.Value, left && right];
+    }
+    if( op === 'or' ){
+        return [SType.Value, left || right];
+    }
+    if( op === '??' ){
+        return [SType.Value, left ?? right];
+    }
+    
+    return undefined;
 }

@@ -1,13 +1,13 @@
 import { onAbs, onAdd, onAssertType, onBuildMap, onClear, onCompare, onDateTime, onDrop, onDup, onFetchList, onJoin, onListOpen, onMapOpen, onNip, onPop, onPrint, onPrintStack, onPush, onRegex, onRegexBuild, onRot, onSize, onSwap, onToString, onTuck, onUndefined, onUnexpectedError } from ".";
 import { SType, WordSpec } from "../types";
-import { onCondition } from "./cond";
+import { onCondition, onLogicalOp } from "./cond";
 import { onDefine } from "./define";
-import { onAddList, onConcat, onDiff, onFilter, onGather, onListEval, onListSpread, onMap, onReduce, onUnique } from "./list";
+import { onAddList, onConcat, onDiff, onFilter, onGather, onListEval, onListIndexOf, onListSpread, onMap, onReduce, onUnique } from "./list";
 import { onLoop } from "./loop";
 import { onPluck } from "./pluck";
 
 
-export const stdWords:WordSpec[] = [
+export const stdWords: WordSpec[] = [
 
     // pattern match stack args
     ['[', onListOpen],
@@ -52,6 +52,10 @@ export const stdWords:WordSpec[] = [
     ['>=', onAdd, SType.Value, SType.Value],
     ['<', onAdd, SType.Value, SType.Value],
     ['<=', onAdd, SType.Value, SType.Value],
+
+    // ['max', 'js://Math/max'],
+    // ['min', 'js://Math/min'],
+    // ['abs', 'js://Math/abs'],
     ['max', onAdd, SType.Value, SType.Value],
     ['min', onAdd, SType.Value, SType.Value],
     ['abs', onAbs, SType.Value],
@@ -63,9 +67,9 @@ export const stdWords:WordSpec[] = [
 
     ['@', onFetchList, SType.List, SType.Value],
 
-    
 
-    
+
+
     ['to_map', onBuildMap],
     ['to_str!', onToString],
     ['to_str', onToString],
@@ -99,6 +103,9 @@ export const stdWords:WordSpec[] = [
     ['filter', onFilter, SType.List, SType.List],
     ['reduce', onReduce, SType.List, SType.Any, SType.Any],
 
+    ['index_of', onListIndexOf, SType.List, SType.Value],
+    ['index_of!', onListIndexOf, SType.List, SType.Value],
+
     ['gather', onGather],
     // ['concat', onConcat],
     ['concat', onConcat, SType.Any, SType.List],
@@ -112,6 +119,12 @@ export const stdWords:WordSpec[] = [
     // ['cond', onCondition, SType.Any, SType.Any, SType.Any], // cond, if, else
     ['iif', onCondition, SType.Any, SType.Any, SType.Any], // cond, if, else
     ['if', onCondition, SType.Any, SType.Any],
+
+
+    ['and', onLogicalOp, SType.Any, SType.Any],
+    ['or', onLogicalOp, SType.Any, SType.Any],
+    ['??', onLogicalOp, SType.Any, SType.Any],
+
     ['size!', onSize, SType.Any], // destructive (any -- int)
     ['size', onSize, SType.Any], // non destructive (any -- any int)
     ['loop', onLoop, SType.List],

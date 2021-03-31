@@ -272,3 +272,20 @@ export function onDiff(stack: Filth, [,op]:StackValue): InstResult {
 
     return [SType.List, out];
 }
+
+
+
+export function onListIndexOf( stack:Filth, [,op]:StackValue): InstResult {
+    const isDes = op.endsWith('!');
+    let left = stack.pop();
+    let right = isDes ? stack.pop() : stack.peek();
+    let arr = unpackStackValue(right, SType.List);
+    let idx = left;
+
+    let result = arr.findIndex( ([at,av]) => {
+        return at === idx[0] && av === idx[1];
+    })
+
+    // console.log('[onListIndexOf]', arr, idx, result );
+    return [SType.Value, result];
+}

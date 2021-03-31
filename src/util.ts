@@ -83,7 +83,7 @@ export function unpackStackValue(val: StackValue, assertType: (SType | SType[]) 
             }, {}) : value;
         case SType.Value:
         case SType.Any:
-        case SType.Function:
+        case SType.Word:
         case SType.Regex:
         case SType.DateTime:
             return value;

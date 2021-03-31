@@ -478,9 +478,10 @@ export function onClear<QS extends Filth>(stack: QS): InstResult {
     return undefined;
 };
 
-export function onVersion<QS extends Filth>(stack: QS): InstResult {
-    return [SType.Value, '1.0.0'];
-};
+// export function onVersion<QS extends Filth>(stack: QS): InstResult {
+//     const version = require('../../package.json').version;
+//     return [SType.Value, version];
+// };
 
 
 export function onAssertType<QS extends Filth>(stack: QS): InstResult {

@@ -1,11 +1,11 @@
 import assert from 'uvu/assert';
 import { suite } from 'uvu';
-import { parseString } from '../src/parser';
+import { tokenizeString } from '../src/tokenizer';
 
-const test = suite('Parser');
+const test = suite('Tokenizer');
 
 
-test('parse', () => {
+test('tokenizeString', () => {
     let cases = [
         ['[29]',
             [
@@ -77,24 +77,44 @@ test('parse', () => {
                 ],
                 ['}', 182, 7]
             ]],
-        [`
-            {
+        [
+            `{
                 # TL;DR
                 human:   Hjson
                 machine: JSON
             }`,
             [
-                ['{', 13, 1],
-                ['human', 55, 3],
-                ['Hjson', 64, 3],
-                ['machine', 86, 4],
-                ['JSON', 95, 4],
-                ['}', 112, 5]
-            ]]
+                ['{', 0, 0],
+                ['human', 42, 2],
+                ['Hjson', 51, 2],
+                ['machine', 73, 3],
+                ['JSON', 82, 3],
+                ['}', 99, 4]
+            ]
+        ],
+        [
+            `{ 'name':'finn' }`,
+            [
+                ["{", 0, 0],
+                ["name", 3, 0],
+                ["finn", 10, 0],
+                ["}", 16, 0],
+            ]
+        ],
+        [
+            `[ "oh cheese" '' size! ]`,
+            [
+                ["[", 0, 0],
+                ["oh cheese", 2, 0],
+                ["", 14, 0],
+                ["size!", 17, 0],
+                ["]", 23, 0],
+            ]
+        ]
     ];
 
     cases.forEach(([input, expected]) => {
-        let output = parseString(input as string);
+        let output = tokenizeString(input as string);
         // console.log(input, output);
         assert.equal(output, expected as []);
 

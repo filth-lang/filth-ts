@@ -8,7 +8,7 @@ import {
     StackValue, WordFn, SType,
     StackError, InstResult, AsyncInstResult, WordSpec, WordEntry, Words
 } from "./types";
-import { parseString } from './parser';
+import { tokenizeString } from './tokenizer';
 
 
 export interface CloneOptions {
@@ -16,18 +16,6 @@ export interface CloneOptions {
     words?: boolean;
 }
 
-// export const ActiveMode = {
-//     Active: 0,
-//     Leave: 1,
-//     Break: 2,
-//     Return: 3,
-// } as const;
-// type ActiveMode = typeof ActiveMode[keyof typeof ActiveMode]
-
-// export const MODE_LEAVE = 0;
-// export const MODE_BREAK = 1;
-
-// type ActiveMode = 0 | 1;
 
 let stackId = 0;
 
@@ -38,10 +26,6 @@ interface FilthInst {
     isUDWordsActive: boolean;
     isEscapeActive: boolean;
     isActive: boolean;
-    // pendingActive?: boolean;
-    // leaveSet?: boolean;
-    // wordStack: any[];
-    // udWords: { [key:string]: any };
 }
 
 function createInst(): FilthInst {
@@ -189,6 +173,11 @@ export class Filth {
     //     return this;
     // }
 
+    /**
+     * sets a new child stack and sets the focus
+     * 
+     * @param stack 
+     */
     setChild(stack?: Filth): Filth {
         let sub = createInst();
         if (stack !== undefined) {
@@ -213,12 +202,12 @@ export class Filth {
 
     
     /**
-     * Evaluates a string
+     * Parses a string and pushes the found values to the stack
      * 
      * @param input 
      */
     async eval( input:string ){
-        const insts = parseString(input,{returnValues:true});
+        const insts = tokenizeString(input,{returnValues:true});
         await this.pushValues(insts);
         return this;
     }
@@ -227,7 +216,7 @@ export class Filth {
     /**
      * Pushes a stack value onto the stack
      */
-    async push(input: any | StackValue, options?: PushOptions): Promise<StackValue> {
+     async push(input: any | StackValue, options?: PushOptions): Promise<StackValue> {
         let value: StackValue;
         let handler: WordFn;
         // const ticket = options.ticket;
@@ -270,8 +259,8 @@ export class Filth {
                 const sigilV = word.substring(3, end);
 
                 if (sigil === 'r') {
-                    // Log.debug('[push]', 'regex', sigilV);
                     const regex = new RegExp(sigilV, flags);
+                    // Log.debug('[push]', 'regex', sigilV, regex);
                     value = [SType.Regex, regex];
                 }
                 else if (sigil === 'd') {
@@ -353,6 +342,9 @@ export class Filth {
         if (value !== undefined) {
             this.items.push(value);
         }
+        // Log.debug('[push]', word, value, handler, this.isActive );
+        // Log.debug('[push]', this.items );
+
         return value;
     }
 

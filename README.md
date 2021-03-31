@@ -1,6 +1,6 @@
-# ODGN Filth
+# Filth
 
-A language based on Forth.
+A language loosely based on Forth.
 
 
 
@@ -63,18 +63,18 @@ stack-based language and programming environment. It's also not used by NASA.
 
 1 2 3 4 tuck   # duplicate the top item below the second slot:      1 2 4 3 4 ok
 1 2 3 4 over   # duplicate the second item to the top:             1 2 3 4 3 ok
-1 2 3 4 2 roll # *move* the item at that position to the top:      1 3 4 2 ok
-1 2 3 4 2 pick # *duplicate* the item at that position to the top: 1 2 3 4 2 ok
+1 2 3 4 %1     # duplicate the item at that offset to the top:     1 2 3 4 3 ok
+1 2 3 4 $3     # move the item at that offset to the top:          2 3 4 1 ok
 
 # When referring to stack indexes, they are zero-based.
 
 # ------------------------------ Creating Words --------------------------------
 
-# The `:` word sets Filth into compile mode until it sees the `;` word.
-: square ( n -- n ) dup * ;    # ok
+[ dup * ] define square        # ok
 5 square .                     # 25 ok
 
 # We can view what a word does too:
+*square see    # [ dup * ] ok
 see square     # : square dup * ; ok
 
 # -------------------------------- Conditionals --------------------------------

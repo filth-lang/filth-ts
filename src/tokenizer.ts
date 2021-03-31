@@ -40,7 +40,7 @@ interface Context {
 }
 
 
-export interface ParseOptions {
+export interface TokenizeOptions {
     returnValues?: boolean;
 }
 
@@ -49,7 +49,7 @@ export interface ParseOptions {
  * @param data 
  * @param options 
  */
-export function parseString(data:string, options:ParseOptions = {}) {
+export function tokenizeString(data:string, options:TokenizeOptions = {}) {
     const returnValues = options.returnValues ?? false;
     let context = createContext();
 
@@ -57,7 +57,7 @@ export function parseString(data:string, options:ParseOptions = {}) {
         data = data + '\n';
     }
 
-    context = parse(context, data);
+    context = tokenize(context, data);
 
     return returnValues ? context.output.map( e => e[0] ) : context.output;
 }
@@ -65,7 +65,7 @@ export function parseString(data:string, options:ParseOptions = {}) {
 /**
  * Entry point for parsing a new string
  */
-export function parse(context:Context, input:string):Context {
+export function tokenize(context:Context, input:string):Context {
     context = context || createContext();
     context.length = context.pos + input.length;
 
@@ -97,10 +97,12 @@ function process(context:Context, input:string):Context {
         const isNewline = char === '\n';
         
 
+        
         if ( isSet(mode,MODE_MAYBE_QUOTE)) {
-            // console.log('maybequote', charBuffer );
+            // console.log('maybequote', char, charBuffer, char !== "'", charBuffer[1] === "'" );
             let clear = false;
             if( char === '*' || char === '/' || char === "'" ){
+                // console.log("GO", char, charBuffer);
                 if (char === '*' && charBuffer[1] === '/') {
                     mode = set(mode,MODE_MULTI_COMMENT);
                     clear = true;
@@ -111,10 +113,29 @@ function process(context:Context, input:string):Context {
                 }
                 else if (char === "'" && charBuffer[1] === "'" && charBuffer[2] === "'") {
                     mode = set(mode,MODE_MULTI_QUOTE);
+                    
                     offset = linePosition;
                     // Log('process', 'multiquote offset', offset);
                     clear = true;
                 }
+                
+            }
+            else if( char !== "'" && charBuffer[1] === "'" && charBuffer[2] === "'" ){
+                // console.log('oh snap', char, charBuffer, buffer););
+                output.push(["",markPosition,line]);
+                clear = true;
+            }
+            else if( char !== "'" && charBuffer[1] === "'" ){
+                mode = set(mode, MODE_QUOTE);
+                mode = unset(mode, MODE_MAYBE_QUOTE );
+                offset = linePosition;
+                markPosition = pos;
+                // char = '';
+                endChar = "'";
+                // clear = false;
+                buffer = char;
+                // console.log('dammit', char, charBuffer, buffer);
+                continue;
             }
             else {
                 // console.log('start val', char, pos);
@@ -169,6 +190,7 @@ function process(context:Context, input:string):Context {
                 }
             }
         } else if (mode === MODE_MULTI_QUOTE) {
+            // console.log('mode multiquote', pos, char, isNewline);
             // check for end quote
             if (char == "'" && charBuffer[1] == "'" && charBuffer[2] == "'") {
                 // mode = MODE_IDLE;
@@ -235,6 +257,7 @@ function process(context:Context, input:string):Context {
                     // withinComment = true;
                     break;
                 case '"':
+                
                     mode = set(mode,MODE_QUOTE);
                     // withinQuote = true;
                     markPosition = pos;
@@ -281,6 +304,8 @@ function process(context:Context, input:string):Context {
         //     modeToString(context),
         //     buffer
         // );
+
+        // console.log('>>', char, buffer, mode );
     }
 
 
