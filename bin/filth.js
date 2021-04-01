@@ -3,11 +3,12 @@
 
 const Readline = require('readline');
 let { Filth } = require('../src');
+let { valueToString } = require('../src/util');
 const pkg = require('../package.json');
 
 const log = (...args) => console.log(...args);
 let filth = new Filth({ print: log });
-
+let data = '';
 
 const rl = Readline.createInterface({
     input: process.stdin,
@@ -18,11 +19,11 @@ rl.on('line', async (input) => {
     if (input === 'bye') {
         process.exit(0);
     }
-    // log(`Received: ${input}`);
+    log(`Received: ${input}`);
 
     try {
         await filth.eval(input);
-        // rl.write('\tok\n');
+        rl.write('\tok\n');
     } catch (err) {
         log(err.message);
     }
@@ -31,11 +32,9 @@ rl.on('line', async (input) => {
 
 
 function onSee(stack) {
-    let val = stack.pop();
-
-    let word = stack.getWord(val);
-
-    log('(', 'examining', word, ')');
+    let word = stack.pop();
+    let val = stack.getWord(word);
+    stack.print( valueToString(val, false) );
     return undefined;
 }
 

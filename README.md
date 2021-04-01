@@ -1,8 +1,3 @@
-# Filth
-
-A language loosely based on Forth.
-
-
 
 ---
 language: filth
@@ -10,6 +5,11 @@ contributors:
     - ["Alexander Veenendaal", "http://github.com/odogono/"]
 filename: learnfilth.fs
 ---
+
+# Filth
+
+A language loosely based on Forth.
+
 
 Filth was created by Alexander Veenendaal in the 10s. It is an imperative,
 stack-based language and programming environment. It's also not used by NASA.
@@ -172,20 +172,6 @@ mynumbers 2 of-arr ?               # 1337 ok
 20 mynumbers 1 of-arr !    # ok
 mynumbers 1 of-arr ?       # 20 ok
 
-# ------------------------------ The Return Stack ------------------------------
-
-# The return stack is used to the hold pointers to things when words are
-# executing other words, e.g. loops.
-
-# We've already seen one use of it: `i`, which duplicates the top of the return
-# stack. `i` is equivalent to `r@`.
-: myloop ( -- ) 5 0 do r@ . loop ;    # ok
-
-# As well as reading, we can add to the return stack and remove from it:
-5 6 4 >r swap r> .s    # 6 5 4 ok
-
-# NOTE: Because Filth uses the return stack for word pointers,  `>r` should
-# always be followed by `r>`.
 
 # ------------------------- Floating Point Operations --------------------------
 
@@ -201,7 +187,7 @@ myfloatingvar f@ f.       # 4.4 ok
 
 # Typing a non-existent word will empty the stack. However, there's also a word
 # specifically for that:
-clearstack
+cls
 
 # Clear the screen:
 page
