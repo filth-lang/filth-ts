@@ -1,11 +1,3 @@
-
----
-language: filth
-contributors:
-    - ["Alexander Veenendaal", "http://github.com/odogono/"]
-filename: learnfilth.fs
----
-
 # Filth
 
 A language loosely based on Forth.
