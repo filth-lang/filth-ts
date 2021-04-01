@@ -87,7 +87,9 @@ function build({ dir = 'dist', format = 'esm', input, output: outputFile = 'inde
         output = {
             ...output,
             name: 'filth',
-            file: `${dir}/${base}.${format}${minifierSuffix}.${ext}`
+            file: `${dir}/${base}.${ext}`
+            // file: `${dir}/${base}${minifierSuffix}.${ext}`
+            // file: `${dir}/${base}.${format}${minifierSuffix}.${ext}`
         }
     } else {
         const entryFileNames = `[name]${minifierSuffix}.${ext}`;
@@ -106,8 +108,8 @@ function build({ dir = 'dist', format = 'esm', input, output: outputFile = 'inde
         input,
         output,
         plugins: [
-            Replace({ 'process.env.NODE_ENV': JSON.stringify(environment) }),
-            Replace({ 'process.env.JS_ENV': JSON.stringify(jsEnv) }),
+            Replace({ 'process.env.NODE_ENV': JSON.stringify(environment), preventAssignment:true }),
+            Replace({ 'process.env.JS_ENV': JSON.stringify(jsEnv), preventAssignment:true }),
             NodeResolve({ browser: true, preferBuiltins: false }),
             typescript({ tsconfig: './tsconfig.json', tsconfigOverride }),
             minify ? terser({ compress, mangle: true }) : undefined,
@@ -124,7 +126,7 @@ export default [
         input: 'src/index.ts',
         output: 'index.mjs',
         format: 'esm',
-        // minify: true
+        minify: true
         // output: [{ dir: 'dist', format: 'esm', esModule: true, entryFileNames: '[name].mjs' }]
     },
     {
@@ -132,7 +134,7 @@ export default [
         input: 'src/index.ts',
         output: 'index.js',
         format: 'cjs',
-        // minify: true
+        minify: true
     }
     // {
     //     ...config,

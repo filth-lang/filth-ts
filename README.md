@@ -78,19 +78,22 @@ stack-based language and programming environment. It's also not used by NASA.
 
 # -------------------------------- Conditionals --------------------------------
 
-# -1 == true, 0 == false. However, any non-zero value is usually treated as
-# being true:
-42 42 =    # -1 ok
-12 53 =    # 0 ok
+42 42 ==    # true ok
+12 53 ==    # false ok
+
+12 53 !=    # true ok
 
 # `if` is a compile-only word. `if` <stuff to do> `then` <rest of program>.
-: ?>64 ( n -- n ) dup 64 > if ." Greater than 64!" then ; # ok
-100 ?>64                                                  # Greater than 64! ok
+[ [ "Greater than 64!" ] *%1 64 > if ] ?> define          # ok
+100 ?> 64                                                 # Greater than 64! ok
+
 
 # Else:
+[ [ "Less than 64!" ] [ "Greater than 64!" ] *%2 64 > iif ] ?> define
+
 : ?>64 ( n -- n ) dup 64 > if ." Greater than 64!" else ." Less than 64!" then ;
-100 ?>64    # Greater than 64! ok
-20 ?>64     # Less than 64! ok
+100 ?> 64    # Greater than 64! ok
+20 ?> 64     # Less than 64! ok
 
 # ------------------------------------ Loops -----------------------------------
 
