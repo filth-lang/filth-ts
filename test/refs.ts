@@ -9,19 +9,19 @@ const test = suite('References');
 test('pops an earlier word', async () => {
     const f = new Filth();
     await f.eval(`planet world hello $1`);
-    assert.equal(f.toString(), '"world" "hello" "planet"');
+    assert.equal(f.toString(), 'world hello planet');
 });
 
 test('works within a list', async () => {
     const f = new Filth();
     await f.eval(`planet world [ hello $0 ]`);
-    assert.equal(f.toString(), '["hello"] "world" "planet"');
+    assert.equal(f.toString(), '[ hello ] world planet');
 });
 
 test('pops above a list', async () => {
     const f = new Filth();
     await f.eval(`planet [ world [ hello ^^$0 ]]`);
-    assert.equal(f.toString(), '["world", ["hello", "planet"]]');
+    assert.equal(f.toString(), '[ world [ hello planet ] ]');
 });
 
 
@@ -29,7 +29,7 @@ test('not evaluated the first time', async () => {
     // spread evaluates the reference    
     const f = new Filth();
     await f.eval(`planet world [ hello ^$1 ] spread`);
-    assert.equal(f.toString(), '"planet" "hello" "world"');
+    assert.equal(f.toString(), 'planet hello world');
 });
 
 
@@ -47,7 +47,7 @@ test('references words outside of array', async () => {
 test('peeks an earlier word', async () => {
     const f = new Filth();
     await f.eval(`planet world hello %1`);
-    assert.equal(f.toString(), '"world" "hello" "world" "planet"');
+    assert.equal(f.toString(), 'world hello world planet');
 })
 
 test('out of range on peeking an earlier word', async () => {

@@ -120,10 +120,10 @@ export function onConcat<QS extends Filth>(stack: QS, val: StackValue): InstResu
     let a = stack.pop();
     let b = stack.pop();
 
-    // Log.debug('[onConcat]', 'a:', a[0], 'b:', b );
+    
     b = b[0] !== SType.List ? [b] : b[1];
 
-    let values = [].concat(a[1], b);
+    let values = [].concat(b, a[1]);
 
     return [SType.List, values];
 }

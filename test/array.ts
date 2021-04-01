@@ -64,18 +64,24 @@ test('gather builds a list from similar items', async () => {
     `);
 
     // hello is not added to the result array
-    assert.equal( f.toString(), `[14, 12, 10] ["hello"]`);
+    assert.equal( f.toString(), `[ 14 12 10 ] [ hello ]`);
 });
 
 test('concat joins arrays', async () => {
     const f = new Filth();
-    
+
     await f.eval(`
     [hello] [10 12] [14] concat
     `);
 
     // hello is not added to the result array
-    assert.equal( f.toString(), `[14, 10, 12] ["hello"]`);
+    assert.equal( f.toString(), `[ 10 12 14 ] [ hello ]`);
+
+    await f.eval(`
+    cls [ "hello world" ] [ today ] concat
+    `);
+
+    assert.equal( f.toString(), `[ "hello world" today ]` );
 });
 
 test('concat joins arrays and values', async () => {
@@ -86,7 +92,7 @@ test('concat joins arrays and values', async () => {
     `);
 
     // hello is not added to the result array
-    assert.equal( f.toString(), `[14, "hello"]`);
+    assert.equal( f.toString(), `[ hello 14 ]`);
 });
 
 

@@ -29,7 +29,8 @@ export function valueToString(val: StackValue, listToString:boolean = false): st
         return val as any;
     }
     const [type, value] = val;
-    const strCheck = /^[a-z0-9\/_$]+$/i;
+    // const strCheck = /^[a-z0-9\/_$]+$/i;
+    const whitespaceCheck = /\s+/;
 
     // Log.debug('[valueToString]', type, value);
     switch (type) {
@@ -44,7 +45,8 @@ export function valueToString(val: StackValue, listToString:boolean = false): st
                 return [...res, `${key}: ${valueToString(value[key])}`];
             }, []).join(' ') + ' }';
         case SType.Value:
-            return value; //(strCheck.test(value) || forceString) ? value : JSON.stringify(value);// : value;
+            return whitespaceCheck.test(value) ? stringify(value) : value;
+            // return value; //(strCheck.test(value) || forceString) ? value : JSON.stringify(value);// : value;
             // return JSON.stringify(value);
         case SType.Regex:
             return '~r/' + value.toString() + '/';

@@ -34,8 +34,15 @@ test('addition', async () => {
 
     await filth.eval('52 23 min');
     assert.equal( filth.popValue(), 23);
-
 })
 
+
+
+test('comparison', async () => {
+    const filth = new Filth();
+
+    await filth.eval('6 4 >');
+    assert.equal( filth.popValue(), true);
+});
 
 test.run();
