@@ -13,7 +13,9 @@ test('define', async () => {
     await f.eval('[ dup * ] square define');
     await f.eval('5 square')
     assert.equal( f.popValue(), 25);
-    
+
+    await f.eval( '*square see' );
+    assert.equal( output, '[ dup * ]');
 });
 
 
@@ -23,7 +25,7 @@ test('accesses defined words', async () => {
             active status let
             [ status is $status ] eval
             `);
-    assert.equal(f.toString(), '["status", "is", "active"]');
+    assert.equal(f.toString(), '[ status is active ]');
 });
 
 
@@ -40,6 +42,17 @@ test('a let word pushes', async () => {
     assert.equal(f.popValue(), [2, 3, '+']);
 });
 
+test('fetch word', async () => {
+    const f = new Filth();
+
+    await f.eval(`
+        21 age !
+        age @
+    `);
+
+    assert.equal( f.popValue(), 21 );
+});
+
 
 test('evals map', async () => {
     const f = new Filth();
@@ -47,7 +60,7 @@ test('evals map', async () => {
             active status let
             { status: $status }
             `);
-    assert.equal(f.toString(), '{"status": "active"}');
+    assert.equal(f.toString(), '{ status: active }');
 });
 
 

@@ -1,7 +1,7 @@
 import { StackValue, InstResult, AsyncInstResult, SType } from "../types";
 import { Filth } from "../";
 import { isString, parseUri } from "@odgn/utils";
-import { unpackStackValueR } from "../util";
+import { unpackStackValueR, valueToString } from "../util";
 
 
 /**
@@ -74,3 +74,18 @@ export function onDefine(stack: Filth, [, op]: StackValue): InstResult {
 
     return undefined;
 };
+
+
+export function onFetchWord(stack:Filth): InstResult {
+    let word = stack.popValue();
+    const val = stack.getUDWord(word);
+    return val;
+}
+
+export function onSee(stack:Filth): InstResult {
+    let word = stack.pop();
+    let val = stack.getWord(word);
+    // let list = [ SType.List, val[1] ];
+    stack.print( valueToString(val as any, false) );
+    return undefined;
+}

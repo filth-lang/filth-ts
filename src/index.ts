@@ -51,7 +51,7 @@ export class Filth {
     _idx: number = 0;
     _stacks: FilthInst[];
 
-    // _udWords = new WeakMap();
+    
     _udWords: { [key: string]: any } = {};
 
     debug: boolean = false;

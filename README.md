@@ -70,7 +70,7 @@ stack-based language and programming environment. It's also not used by NASA.
 
 # ------------------------------ Creating Words --------------------------------
 
-[ dup * ] define square        # ok
+[ dup * ] square define        # ok
 5 square .                     # 25 ok
 
 # We can view what a word does too:
@@ -94,40 +94,35 @@ stack-based language and programming environment. It's also not used by NASA.
 
 # ------------------------------------ Loops -----------------------------------
 
-# `do` is also a compile-only word.
-: myloop ( -- ) 5 0 do cr ." Hello!" loop ; # ok
-myloop
+# a loop continues while the last value is true
+[ hello! . $i 4 < ] loop # ok
 # Hello!
 # Hello!
 # Hello!
 # Hello!
 # Hello! ok
 
-# `do` expects two numbers on the stack: the end number and the start number.
-
+# `do` takes an end and start number
 # We can get the value of the index as we loop with `i`:
-: one-to-12 ( -- ) 12 0 do i . loop ;     # ok
-one-to-12                                 # 0 1 2 3 4 5 6 7 8 9 10 11 12 ok
+[ $i .] 12 0 do # ok
+# 0 1 2 3 4 5 6 7 8 9 10 11 12 ok
+
 
 # `?do` works similarly, except it will skip the loop if the end and start
 # numbers are equal.
-: squares ( n -- ) 0 ?do i square . loop ;   # ok
-10 squares                                   # 0 1 4 9 16 25 36 49 64 81 ok
+[ dup * ] square define # ok
+[ [ $i square . ] *$1 0 ?do ] squares define # ok
+10 squares
 
-# Change the "step" with `+loop`:
-: threes ( n n -- ) ?do i . 3 +loop ;    # ok
-15 0 threes                             # 0 3 6 9 12 ok
-
-# Indefinite loops with `begin` <stuff to do> <flag> `until`:
-: death ( -- ) begin ." Are we there yet?" 0 until ;    # ok
 
 # ---------------------------- Variables and Memory ----------------------------
 
-# Use `variable` to declare `age` to be a variable.
-variable age    # ok
+# use `!` to assign 21 to the `age` variable
+21 age !
 
-# Then we write 21 to age with the word `!`.
-21 age !    # ok
+# print the variable using the $ prefix
+$age .     # 21 ok
+age @ .    # 21 ok
 
 # Finally we can print our variable using the "read" word `@`, which adds the
 # value to the stack, or use `?` that reads and prints it in one go.

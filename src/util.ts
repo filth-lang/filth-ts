@@ -34,16 +34,17 @@ export function valueToString(val: StackValue, listToString:boolean = false): st
     // Log.debug('[valueToString]', type, value);
     switch (type) {
         case SType.List:
+        case SType.Word:
             if( listToString ){
                 return value.map(v => valueToString(v,listToString)).join(' ');
             }
-            return `[` + value.map(v => valueToString(v)).join(', ') + ']';
+            return `[ ` + value.map(v => valueToString(v)).join(' ') + ' ]';
         case SType.Map:
-            return '{' + Object.keys(value).reduce((res, key) => {
-                return [...res, `"${key}": ${valueToString(value[key])}`];
-            }, []).join(',') + '}';
+            return '{ ' + Object.keys(value).reduce((res, key) => {
+                return [...res, `${key}: ${valueToString(value[key])}`];
+            }, []).join(' ') + ' }';
         case SType.Value:
-            return strCheck.test(value) ? JSON.stringify(value) : value;
+            return value; //(strCheck.test(value) || forceString) ? value : JSON.stringify(value);// : value;
             // return JSON.stringify(value);
         case SType.Regex:
             return '~r/' + value.toString() + '/';

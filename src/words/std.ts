@@ -1,9 +1,9 @@
 import { onAbs, onAdd, onAssertType, onBuildMap, onClear, onCompare, onDateTime, onDrop, onDup, onFetchList, onJoin, onListOpen, onMapOpen, onNip, onPop, onPrint, onPrintStack, onPush, onRegex, onRegexBuild, onRot, onSize, onSwap, onToString, onTuck, onUndefined, onUnexpectedError } from ".";
 import { SType, WordSpec } from "../types";
 import { onCondition, onLogicalOp } from "./cond";
-import { onDefine } from "./define";
+import { onDefine, onFetchWord, onSee } from "./define";
 import { onAddList, onConcat, onDiff, onFilter, onGather, onListEval, onListIndexOf, onListSpread, onMap, onReduce, onUnique } from "./list";
-import { onLoop } from "./loop";
+import { onDo, onLoop } from "./loop";
 import { onPluck } from "./pluck";
 
 
@@ -20,6 +20,7 @@ export const stdWords: WordSpec[] = [
     // a let or ! value is just pushed onto the stack
     ['let', onDefine, SType.Any, SType.Value],
     ['!', onDefine, SType.Any, SType.Value],
+    ['see', onSee, SType.Value],
 
 
     ['eval', onRegex, SType.Any, SType.Regex],
@@ -66,6 +67,7 @@ export const stdWords: WordSpec[] = [
     ['!=', onCompare, SType.Any, SType.Any],
 
     ['@', onFetchList, SType.List, SType.Value],
+    ['@', onFetchWord, SType.Value],
 
 
 
@@ -128,6 +130,8 @@ export const stdWords: WordSpec[] = [
     ['size!', onSize, SType.Any], // destructive (any -- int)
     ['size', onSize, SType.Any], // non destructive (any -- any int)
     ['loop', onLoop, SType.List],
+    ['do', onDo, SType.List, SType.Value, SType.Value],
+    ['?do', onDo, SType.List, SType.Value, SType.Value],
 
     ['undefined', onUndefined],
 
