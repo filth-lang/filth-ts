@@ -64,7 +64,7 @@ test('gather builds a list from similar items', async () => {
     `);
 
     // hello is not added to the result array
-    assert.equal( f.toString(), `[ 14 12 10 ] [ hello ]`);
+    assert.equal( f.toString(), `[ 10 12 14 ] [ hello ]`);
 });
 
 test('concat joins arrays', async () => {

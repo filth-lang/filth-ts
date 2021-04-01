@@ -96,18 +96,12 @@ export async function evalList<QS extends Filth>(stack: QS, list: StackValue[]):
 export function onGather<QS extends Filth>(stack: QS, val: StackValue): InstResult {
     let values: StackValue[];
     let first = stack.pop();
-    let type: SType = first[0]; //unpackStackValue(first, SType.Value);
+    let type: SType = first[0];
 
     values = stack.popOfType(type);
-    // Log.debug('[onConcat]', type, first, values);
-
-    // if( type === SType.List ){
-    //     // concat the array into a single
-    //     values = [].concat( first[1], ...values.map(v => v[1]) );
-    // } else {
-    values = [first, ...values];
-    // }
-
+    
+    values = [...values.reverse(), first];
+    
     return [SType.List, values];
 }
 
