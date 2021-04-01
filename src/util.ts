@@ -24,12 +24,11 @@ export function stackToString(stack: Filth, reverse:boolean = true, items:StackV
     return strs.join(' ');
 }
 
-export function valueToString(val: StackValue, listToString:boolean = false): string {
+export function valueToString(val: StackValue, listToString:boolean = false, ignoreWhiteSpace:boolean = false): string {
     if( !Array.isArray(val) ){
         return val as any;
     }
     const [type, value] = val;
-    // const strCheck = /^[a-z0-9\/_$]+$/i;
     const whitespaceCheck = /\s+/;
 
     // Log.debug('[valueToString]', type, value);
@@ -42,12 +41,10 @@ export function valueToString(val: StackValue, listToString:boolean = false): st
             return `[ ` + value.map(v => valueToString(v)).join(' ') + ' ]';
         case SType.Map:
             return '{ ' + Object.keys(value).reduce((res, key) => {
-                return [...res, `${key}: ${valueToString(value[key])}`];
+                return [...res, `${stringValueToString(key)}: ${valueToString(value[key])}`];
             }, []).join(' ') + ' }';
         case SType.Value:
-            return whitespaceCheck.test(value) ? stringify(value) : value;
-            // return value; //(strCheck.test(value) || forceString) ? value : JSON.stringify(value);// : value;
-            // return JSON.stringify(value);
+            return stringValueToString(value, ignoreWhiteSpace);
         case SType.Regex:
             return '~r/' + value.toString() + '/';
         case SType.DateTime:
@@ -57,7 +54,10 @@ export function valueToString(val: StackValue, listToString:boolean = false): st
     }
 }
 
-
+function stringValueToString( value:string, ignoreWhiteSpace:boolean = false ){
+    const whitespaceCheck = /\s+/;
+    return (!ignoreWhiteSpace && whitespaceCheck.test(value)) ? stringify(value) : value;
+}
 
 /**
  * 
