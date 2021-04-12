@@ -3,6 +3,9 @@ import { Filth } from "../";
 import { unpackStackValue, unpackStackValueR } from "../util";
 
 
+const LOOP_OOC = 10000;
+
+
 export async function onDo(stack: Filth, [,op]: StackValue): AsyncInstResult {
     const isSame = op === '?do';
     let start = stack.popValue();
@@ -21,7 +24,7 @@ export async function onLoop(stack: Filth, [, op]: StackValue): AsyncInstResult 
     return evalLoop(stack, expr);
 };
 
-async function evalLoop(stack: Filth, expr: StackValue[], exitOnNonTrue: boolean = true, start: number = 0, end: number = 10000) {
+async function evalLoop(stack: Filth, expr: StackValue[], exitOnNonTrue: boolean = true, start: number = 0, end: number = LOOP_OOC) {
     let count = start;
     let isLooping = true;
     let result: StackValue = undefined;
@@ -61,7 +64,7 @@ async function evalLoop(stack: Filth, expr: StackValue[], exitOnNonTrue: boolean
         count++;
     }
 
-    if (count > end) {
+    if (count === LOOP_OOC) {
         throw new StackError(`loop out of control ${count} > ${end}`);
     }
 

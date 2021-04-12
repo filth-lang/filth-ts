@@ -1,19 +1,19 @@
 import { Filth } from ".";
 
 export enum SType {
-    Value = '%v',
-    List = '%[]',
-    Map = '%{}',
-    Word = '%w',
-    BitField = '%bf',
+    Value = ':v',
+    List = ':[]',
+    Map = ':{}',
+    Word = ':w',
+    BitField = ':bf',
     // Entity = '%e',
     // EntitySet = '%es',
     // Component = '%c',
     // ComponentDef = '%d',
     // ComponentAttr = '%ca',
-    Regex = '%r',
-    DateTime = '%dt',
-    Any = '%*',
+    Regex = ':r',
+    DateTime = ':dt',
+    Any = ':*',
     // Filter = '%|',
     // Leave = '%#'
     // Undefined = '%un'

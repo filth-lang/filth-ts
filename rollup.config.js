@@ -115,8 +115,6 @@ function build({ dir = 'dist', format = 'esm', input, output: outputFile = 'inde
             minify ? terser({ compress, mangle: true }) : undefined,
         ].filter(Boolean)
     }
-
-    return output;
 }
 
 
