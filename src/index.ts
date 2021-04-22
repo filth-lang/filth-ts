@@ -6,9 +6,22 @@ import { stdWords } from './words/std';
 import { BitField, create as createBitField, toValues as bfToValues } from '@odgn/utils/bitfield';
 import {
     StackValue, WordFn, SType,
-    StackError, InstResult, AsyncInstResult, WordSpec, WordEntry, Words
+    StackError, InstResult, AsyncInstResult, WordSpec, WordEntry, Words, WordArgs
 } from "./types";
 import { tokenizeString } from './tokenizer';
+
+
+
+// whether the break/continue words are active
+export const BREAK_ACTIVE = 1 << 1;
+// whether incoming words are evaled into functions/whatever
+export const EVAL_WORD = 1 << 2;
+// whether offset chars are handled
+export const EVAL_OFFSET = 1 << 3;
+// whether escape chars are handled
+export const EVAL_ESCAPE = 1 << 4;
+// whether any value is pushed to the stack
+export const PUSH_ACTIVE = 1 << 5;
 
 
 export interface CloneOptions {
@@ -51,7 +64,7 @@ export class Filth {
     _idx: number = 0;
     _stacks: FilthInst[];
 
-    
+
     _udWords: { [key: string]: any } = {};
 
     debug: boolean = false;
@@ -147,12 +160,23 @@ export class Filth {
         return items[idx];
     }
 
-    clear(clearItems: boolean = true, clearWords: boolean = false): Filth {
+    clear(clearItems: boolean = true, clearWords: boolean = false, reset: boolean = true): Filth {
+        
+        if (reset) {
+            this._idx = 0;
+            this._stacks = this._stacks.splice(0, 1);
+        }
         if (clearItems) {
             this._stacks[this._idx].items = [];
         }
         if (clearWords) {
             this._stacks[this._idx].words = {};
+        }
+        if (reset) {
+            this.isActive = true;
+            this.isEscapeActive = true;
+            this.isUDWordsActive = true;
+            this._udWords = {};
         }
         return this;
     }
@@ -213,6 +237,7 @@ export class Filth {
     }
 
 
+
     /**
      * Pushes a stack value onto the stack
      */
@@ -226,7 +251,7 @@ export class Filth {
 
         // Log.debug('[push]', 'pre', this.isActive, value);
 
-        if (this.isEscapeActive) {
+        if (this.isEscapeActive) { // BREAK_ACTIVE
             if (word == '@!') {
                 this.isActive = false;
                 // this.setActive(false, ActiveMode.Return, word);
@@ -243,11 +268,9 @@ export class Filth {
         }
 
 
-        // let doPush = true;
         const debug = options?.debug ?? false;
-        const evalEscape = options?.evalEscape ?? false;
 
-        if (type === SType.Value && isString(word)) {
+        if (type === SType.Value && isString(word)) { // EVAL_WORD 
             const len = word.length;
             let evalWord = true;
 
@@ -269,10 +292,10 @@ export class Filth {
             }
 
             // escape char for values which might otherwise get processed as words
-            if (len > 1 && word.charAt(0) === '*') {
+            if (len > 1 && word.charAt(0) === '*') { // EVAL_ESCAPE
                 word = word.substring(1);
                 value = [SType.Value, word] as any;
-                evalWord = evalEscape;// false;
+                evalWord = false;
 
                 // if( debug ) Log.debug('[push]', value, 'escaped');
             }
@@ -290,11 +313,15 @@ export class Filth {
                     }
                 }
 
+
+
+
+
                 // words beginning with $ refer to offsets on the root stack if they are integers,
                 // or user defined words
                 const pr = word.charAt(0);
                 // console.log('REM', pr, word);
-                if (len > 1 && (pr === '$' || pr === '%' || pr === '~')) {
+                if (len > 1 && (pr === '$' || pr === '%' || pr === '~')) { // EVAL_OFFSET
                     let sub = word.substring(1);
                     if (isInteger(sub)) {
                         const idx = toInteger(sub);
@@ -349,12 +376,13 @@ export class Filth {
             }
         }
 
-        if (value !== undefined) {
+        if (value !== undefined) { // PUSH_ACTIVE
             this.items.push(value);
         }
-        // Log.debug('[push]', word, value, handler, this.isActive );
-        // Log.debug('[push]', this.items );
 
+
+
+        
         return value;
     }
 
@@ -485,27 +513,30 @@ export class Filth {
         return this._udWords[word];
     }
 
-    addWords(words: WordSpec[], replace: boolean = false): Filth {
+    /**
+     * Adds a word function to the stack
+     * 
+     * @param words 
+     * @param replace 
+     * @returns 
+     */
+     addWords(words: WordSpec[], replace:boolean = false): Filth {
 
         for (const spec of words) {
             const [word, fn, ...args] = spec;
+            
+            let patterns = replace ? [] : (this.words[word] || []);
 
-            let patterns = replace ?
-                []
-                : (this.words[word] || []);
-            // : Array.isArray(word) ? this.words[word[0]] : (this.words[word] || []);
-            // : Array.isArray(word) ? word.reduce( (o,w) => [...o,this.words[w]], [] ) : (this.words[word] || []);
-            patterns = [...patterns, [fn, (args as (SType[]))]] as WordEntry[];
+            let existing = patterns.findIndex( p => matchWordArgs(args, p) );
 
-            // if( Array.isArray(word) ){
-            //     this.words = word.reduce( (out,w) => ({...out,[w]:patterns }), this.words );
-            //     // console.log('[getWord]', this.words);
-            //     // throw 'stop';
-            // } else {
+            if( existing !== -1 ){
+                patterns.splice( existing, 1, [fn, args] as WordEntry );
+            } else {
+                patterns = [...patterns, [fn, args]] as WordEntry[];
+            }
+
+
             this.words[word] = patterns;
-            // this.words = { ...this.words, [word]: patterns };
-            // }
-
         }
 
         return this;
@@ -622,7 +653,6 @@ export interface PushOptions {
     ignoreActive?: boolean;
     ticket?: string;
     isWord?: boolean;
-    evalEscape?: boolean;
 }
 
 
@@ -652,4 +682,9 @@ function matchStack(stackItems: StackValue[], pattern: SType[]) {
     }
     // Log.debug('[matchStack]', pattern, stackItems );
     return true;
+}
+
+function matchWordArgs( find:WordArgs, pattern:WordEntry ){
+    let [fn, pArgs] = pattern;
+    return JSON.stringify(find) === JSON.stringify(pArgs);
 }

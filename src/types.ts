@@ -39,9 +39,11 @@ export type SyncWordFn = (stack: Filth, val: StackValue) => InstResult;
 export type AsyncWordFn = (stack: Filth, val: StackValue) => Promise<InstResult>;
 
 // word name, word fn, word arg types
-export type WordSpec = [ string, WordFn|StackValue, ...(SType|string)[] ];
+export type WordSpec = [ string, WordFn|StackValue, ...(SType)[] ];
 
-export type WordEntry = [ WordFn, SType[] ];
+export type WordArgs = SType[];
+// fn, args
+export type WordEntry = [ WordFn, WordArgs ];
 
 export interface Words {
     [name: string]: WordEntry[]
