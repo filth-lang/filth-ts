@@ -31,6 +31,7 @@ interface Context {
     mode: number;
     endChar: string;
     mapCount: number;
+    expectKey: boolean;
 }
 
 
@@ -76,6 +77,7 @@ function process(context: Context, input: string): Context {
         output,
         endChar,
         mapCount,
+        expectKey,
         buffer, charBuffer, line, linePosition = 0 } = context;
 
     let cpos = 0;
@@ -97,7 +99,6 @@ function process(context: Context, input: string): Context {
             // console.log('maybequote', char, charBuffer, char !== "'", charBuffer[1] === "'" );
             let clear = false;
             if (char === '*' || char === '/' || char === "'") {
-                // console.log("GO", char, charBuffer);
                 if (char === '*' && charBuffer[1] === '/') {
                     mode = set(mode, MODE_MULTI_COMMENT);
                     clear = true;
@@ -110,13 +111,11 @@ function process(context: Context, input: string): Context {
                     mode = set(mode, MODE_MULTI_QUOTE);
 
                     offset = linePosition;
-                    // Log('process', 'multiquote offset', offset);
                     clear = true;
                 }
 
             }
             else if (char !== "'" && charBuffer[1] === "'" && charBuffer[2] === "'") {
-                // console.log('oh snap', char, charBuffer, buffer);
                 output.push(["", markPosition, line]);
                 clear = true;
             }
@@ -125,22 +124,25 @@ function process(context: Context, input: string): Context {
                 mode = unset(mode, MODE_MAYBE_QUOTE);
                 offset = linePosition;
                 markPosition = pos;
-                // char = '';
                 endChar = "'";
-                // clear = false;
                 buffer = char;
-                // console.log('dammit', char, charBuffer, buffer);
                 continue;
             }
             else {
-                // console.log('start val', {char, pos, mapCount}, buffer);
+                // console.log('start val', {char, pos, mapCount, expectKey, last:charBuffer[1]}, buffer);
                 mode = set(mode, MODE_VALUE);
                 mode = unset(mode, MODE_MAYBE_QUOTE);
+                endChar = char === '"' ? char : '';
+                
                 offset = linePosition;
-                if (mapCount > 0 && charBuffer[1] === ':' && (char === '"' || char === "'")) {
-                    // console.log('map delim', char, buffer);
+                if (mapCount > 0 && charBuffer[1] === ':' && expectKey ){ //&& (char === '"' || char === "'")) {
+                    // console.log(`map delim (${char}) (${buffer})`, {expectKey, mapCount});
                     buffer = '';
                     markPosition++;
+                    expectKey = !expectKey;
+                }
+                else if( mapCount > 0 ){
+                    // console.log(`nope delim (${char}) (${buffer})`, {expectKey, mapCount});
                 }
             }
 
@@ -155,6 +157,7 @@ function process(context: Context, input: string): Context {
             if (isNewline || char === ' ') {
                 // console.log('endof', { markPosition, mapCount }, buffer);
                 if (mapCount === 0) {
+                    
                     output.push([
                         parseValue(buffer.trimEnd()),
                         markPosition,
@@ -166,6 +169,15 @@ function process(context: Context, input: string): Context {
                 buffer = '';
             }
             else {
+                if (char === '{') {
+                    mapCount++;
+                    expectKey = true;
+                    // console.log('inc', {mapCount, char, pos})
+                } else if (char === '}') {
+                    mapCount--;
+                    expectKey = true;
+                    // console.log('dec', {mapCount, char, pos})
+                }
                 switch (char) {
                     // unquoted strings contain everything up to the next line!
                     case '{':
@@ -175,7 +187,8 @@ function process(context: Context, input: string): Context {
                     case ':':
                     case ',':
                         // console.log('but what', `(${char})`, `(${buffer})`, {mode, mapCount});
-                        if (mapCount === 0 && char !== ':') {
+                        if ( char !== ':' && buffer.length > 0) {
+                            
                             output.push([
                                 parseValue(buffer.trimEnd()),
                                 markPosition,
@@ -198,7 +211,7 @@ function process(context: Context, input: string): Context {
             if (char == "'" && charBuffer[1] == "'" && charBuffer[2] == "'") {
                 // mode = MODE_IDLE;
                 mode = unset(mode, MODE_MULTI_QUOTE);
-
+                
                 output.push([
                     trimMultiQuote(buffer, offset),
                     markPosition,
@@ -207,12 +220,25 @@ function process(context: Context, input: string): Context {
                 buffer = '';
             }
         } else if (isSet(mode, MODE_VALUE)) {
-            if (char === ' ' || isNewline || char === ',' || char === ':' || char === ']' || char === '}') {
-                // console.log('end value', {mode, pos, char, mapCount}, buffer);
+            let ended = false;
+            if( endChar.length > 0 ){
+                ended = endChar.indexOf(char) !== -1;
+                if( ended ){
+                    buffer = buffer + char;
+                }
+            }
+            else 
+            {
+                ended = char === ' ' || isNewline || char === ',' || char === ':' || char === ']' || char === '}';
+            }
+            if (ended) {
+                // console.log('end value', {mode, pos, char, endChar, mapCount}, buffer);
+
                 let value = parseValue(buffer.trimEnd());
+                // console.log('end val', {char, value, pos}, value );
                 output.push([value, markPosition, line]);
                 mode = unset(mode, MODE_VALUE);
-                // console.log('end val', char, value, pos);
+                expectKey = true;
                 if (char === ']' || char === '}') {
                     // output.push([ char,markPosition,line]);
                     cpos -= 1;
@@ -220,6 +246,7 @@ function process(context: Context, input: string): Context {
                     linePosition -= 1;
                 }
                 buffer = '';
+                endChar = '';
             }
 
         } else if (isSet(mode, MODE_QUOTE)) {
@@ -228,6 +255,8 @@ function process(context: Context, input: string): Context {
                 output.push([buffer, markPosition, line]);
                 mode = unset(mode, MODE_QUOTE);
                 buffer = '';
+                endChar = '';
+                expectKey = true;
             }
         } else if (isSet(mode, MODE_MULTI_COMMENT)) {
             if (char == '/' && charBuffer[1] == '*') {
@@ -243,8 +272,12 @@ function process(context: Context, input: string): Context {
             // console.log('hmm', mode, char);
             if (char === '{') {
                 mapCount++;
+                expectKey = true;
+                // console.log('inc', {mapCount, char, pos})
             } else if (char === '}') {
                 mapCount--;
+                expectKey = true;
+                // console.log('dec', {mapCount, char, pos})
             }
             switch (char) {
                 case '{':
@@ -266,6 +299,7 @@ function process(context: Context, input: string): Context {
                 case '"':
                     mode = set(mode, MODE_QUOTE);
                     // withinQuote = true;
+                    // console.log('start quote', {char,pos});
                     markPosition = pos;
                     char = '';
                     endChar = '"';
@@ -303,7 +337,7 @@ function process(context: Context, input: string): Context {
     return {
         ...context,
         pos, buffer, endChar,
-        mapCount,
+        mapCount, expectKey,
         offset, markPosition, mode, charBuffer,
         output, line, linePosition
     };
@@ -339,7 +373,8 @@ function createContext(): Context {
         markPosition: 0,
         charBuffer: ['', '', ''],
         endChar: '',
-        mapCount: 0
+        mapCount: 0,
+        expectKey: true,
     };
 }
 
