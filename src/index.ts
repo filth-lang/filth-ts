@@ -69,6 +69,8 @@ export class Filth {
 
     debug: boolean = false;
 
+    ignoreUndefinedUDWord: boolean = false;
+
     printFn: PrintFn
 
     constructor(options: FilthOptions = {}) {
@@ -243,7 +245,7 @@ export class Filth {
      */
     async push(input: any | StackValue, options?: PushOptions): Promise<StackValue> {
         let value: StackValue;
-        let handler: WordFn;
+        let handler: WordFn | StackValue;
         // const ticket = options.ticket;
 
         value = isStackValue(input) ? input : [SType.Value, input];
@@ -339,6 +341,9 @@ export class Filth {
                     }
                     else if (this.isUDWordsActive) {
                         handler = this.getUDWord(sub);
+                        if ( handler === undefined && !this.ignoreUndefinedUDWord) {
+                            handler = [SType.Value, false];
+                        }
                     }
                 }
 
@@ -361,7 +366,7 @@ export class Filth {
                     }
                 }
                 else {
-                    let result = handler(this, value);
+                    let result = (handler as WordFn)(this, value);
                     value = isPromise(result) ? await result : result as InstResult;
                 }
             } catch (err) {
