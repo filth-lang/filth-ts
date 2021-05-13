@@ -99,6 +99,8 @@ export const stdWords: WordSpec[] = [
     ['diff!', onDiff, SType.Any, SType.Any],
     ['intersect', onDiff, SType.Any, SType.Any],
     ['intersect!', onDiff, SType.Any, SType.Any],
+    ['union', onDiff, SType.Any, SType.Any],
+    ['union!', onDiff, SType.Any, SType.Any],
 
     ['unique', onUnique, SType.List],
     ['filter', onFilter, SType.List, SType.Value],

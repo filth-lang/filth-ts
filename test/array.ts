@@ -136,6 +136,15 @@ test('intersect', async () => {
     assert.equal(f.popValue(), [2,4] );
 });
 
+test('union', async () => {
+    const f = new Filth();
+    await f.eval(`
+            [ 1, 2, 3 ]
+            [ 2, 4, 5 ]
+            union!
+            `);
+    assert.equal(f.popValue(), [1,2,3,4,5] );
+});
 
 
 test.run();
