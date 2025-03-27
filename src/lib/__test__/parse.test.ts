@@ -26,6 +26,13 @@ describe('Filth', () => {
       });
     });
 
+    it('should parse lists with strings', () => {
+      expect(parse('(1 hello 3)')).toEqual({
+        elements: [1, 'hello', 3],
+        type: 'list'
+      });
+    });
+
     it('should parse multi-line lists', () => {
       expect(parse('(1\n2\n3)')).toEqual({
         elements: [1, 2, 3],

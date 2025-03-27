@@ -10,6 +10,10 @@ export type FilthList = {
   type: 'list';
 };
 
+export type FilthNil = {
+  type: 'nil';
+};
+
 // Quote type
 export type QuotedExpr = {
   type: 'quoted';
@@ -34,5 +38,6 @@ export type FilthExpr =
   | FilthValue
   | FilthBuiltinFunction
   | FilthList
+  | FilthNil
   | QuotedExpr
   | FilthFunction;

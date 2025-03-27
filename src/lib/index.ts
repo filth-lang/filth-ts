@@ -56,6 +56,17 @@ export const evaluate = async (
 
   if ('type' in expr) {
     if (expr.type === 'quoted') {
+      // log.debug('[evaluate] quoted', expr.value);
+      // throw new Error('stop');
+      if (isFilthList(expr.value)) {
+        const result = await Promise.all(
+          expr.value.elements.map(async e => await evaluate(env, e))
+        );
+        return {
+          elements: result,
+          type: 'list'
+        };
+      }
       return expr.value;
     }
 

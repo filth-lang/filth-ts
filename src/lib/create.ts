@@ -1,6 +1,6 @@
 import { createLog } from '@helpers/log';
 import { Environment } from './environment';
-import { isFilthList } from './helpers';
+import { isFilthList, isFilthNil, isString } from './helpers';
 import { evaluate } from './index';
 import { parse } from './parse';
 import { FilthExpr } from './types';
@@ -110,4 +110,22 @@ const defineListPredicates = (env: EvalEnvironment) => {
     'equal?',
     (a: FilthExpr, b: FilthExpr) => JSON.stringify(a) === JSON.stringify(b)
   );
+  // env.define('nil?', (x: FilthExpr) => isFilthNil(x));
+  env.define('nil?', (x: FilthExpr) => {
+    // log.debug('[nil?] x', x);
+    if (isFilthList(x) && x.elements.length === 0) {
+      return true;
+    }
+    return isFilthNil(x);
+  });
+
+  env.define('len', (x: FilthExpr) => {
+    if (isFilthList(x)) {
+      return x.elements.length;
+    }
+    if (isString(x)) {
+      return x.length;
+    }
+    return 0;
+  });
 };

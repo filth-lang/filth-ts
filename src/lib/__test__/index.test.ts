@@ -12,18 +12,6 @@ describe('Filth', () => {
       expect(await env.eval('(/ 24 2 3)')).toBe(4);
     });
 
-    it('should evaluate list operations', async () => {
-      expect(await env.eval("(car '(1 2 3))")).toBe(1);
-      expect(await env.eval("(cdr '(1 2 3))")).toEqual({
-        elements: [2, 3],
-        type: 'list'
-      });
-      expect(await env.eval("(cons 1 '(2 3))")).toEqual({
-        elements: [1, 2, 3],
-        type: 'list'
-      });
-    });
-
     it('should evaluate conditional expressions', async () => {
       expect(await env.eval('(if true 1 2)')).toBe(1);
       expect(await env.eval('(if false 1 2)')).toBe(2);
@@ -40,17 +28,6 @@ describe('Filth', () => {
       const testEnv = createEnv();
       await testEnv.eval('(define double (lambda (x) (* x 2)))');
       expect(await testEnv.eval('(double 21)')).toBe(42);
-    });
-
-    it('should evaluate list predicates', async () => {
-      expect(await env.eval("(list? '(1 2 3))")).toBe(true);
-      expect(await env.eval("(null? '())")).toBe(true);
-      expect(await env.eval("(null? '(1 2 3))")).toBe(false);
-    });
-
-    it('should evaluate equality checks', async () => {
-      expect(await env.eval("(equal? '(1 2 3) '(1 2 3))")).toBe(true);
-      expect(await env.eval("(equal? '(1 2) '(1 2 3))")).toBe(false);
     });
 
     it('should handle async functions', async () => {

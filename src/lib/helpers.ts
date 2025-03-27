@@ -5,6 +5,7 @@ import {
   FilthExpr,
   FilthFunction,
   FilthList,
+  FilthNil,
   FilthValue,
   QuotedExpr
 } from './types';
@@ -23,6 +24,11 @@ export const isPromise = (expr: FilthExpr): boolean =>
 
 export const isString = (expr: FilthExpr): expr is string =>
   typeof expr === 'string';
+
+export const isFilthNil = (expr: FilthExpr): expr is FilthNil =>
+  expr === null ||
+  expr === undefined ||
+  (typeof expr === 'object' && 'type' in expr && expr.type === 'nil');
 
 export const isFilthList = (expr: FilthExpr): expr is FilthList =>
   expr !== null &&
