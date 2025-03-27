@@ -18,7 +18,8 @@ export class EvalEnvironment extends Environment {
 
   async eval(expr: string): Promise<LispExpr> {
     const parsed = parse(expr);
-    // log.debug('[eval] parsed', parsed);
+    // log.debug('[eval] parsed', expr, parsed);
+
     return evaluate(this, parsed);
   }
 }
@@ -49,11 +50,15 @@ export const createEnv = (): EvalEnvironment => {
 };
 
 const defineLogging = (env: EvalEnvironment) => {
-  env.define('log', (...args: LispExpr[]) => {
-    // eslint-disable-next-line no-console
-    console.debug('[FILTH]', ...args);
-    return null;
-  });
+  env.define(
+    'log',
+    (...args: LispExpr[]) => {
+      // eslint-disable-next-line no-console
+      console.debug('[FILTH]', ...args);
+      return null;
+    },
+    { skipEvaluateArgs: true }
+  );
 };
 
 const definePromises = (env: EvalEnvironment) => {

@@ -6,7 +6,7 @@ import { LispExpr } from './types';
 const log = createLog('filth/parse');
 
 // Enhanced parser with quote support
-export function parse(input: string): LispExpr {
+export const parse = (input: string): LispExpr => {
   // First, protect spaces within quoted strings
   const tokens: string[] = [];
   let currentToken = '';
@@ -86,16 +86,16 @@ export function parse(input: string): LispExpr {
     elements: expressions,
     type: 'list'
   };
-}
-
-const isWhitespace = (token: string): boolean => {
-  return token.trim() === '';
 };
+
+const isWhitespace = (token: string): boolean => token.trim() === '';
 
 const parseTokens = (tokens: string[]): LispExpr => {
   if (tokens.length === 0) {
     throw new ParseError('Unexpected EOF');
   }
+
+  // log.debug('[parseTokens] tokens', tokens);
 
   const token = tokens.shift()!;
 
@@ -134,9 +134,9 @@ const parseTokens = (tokens: string[]): LispExpr => {
 };
 
 export const parseAtom = (token: string): number | string | boolean => {
-  if (token.startsWith('"') && token.endsWith('"')) {
-    return token.slice(1, -1);
-  }
+  // if (token.startsWith('"') && token.endsWith('"')) {
+  //   return token.slice(1, -1);
+  // }
 
   if (token === 'true') {
     return true;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { createEnv } from '../create';
 
-describe('Filth Interpreter', () => {
+describe('Filth', () => {
   it('should handle let expressions', async () => {
     const env = createEnv();
     // // basic let binding

@@ -46,7 +46,7 @@ export const useFilthEnv = () => {
     try {
       const result = await env.current.eval(command);
 
-      log.debug('[exec] result', result);
+      // log.debug('[exec] result', result);
 
       if (isFilthCanvas(result as FilthCanvas)) {
         const canvas = (result as FilthCanvas).value;
@@ -75,6 +75,7 @@ export const useFilthEnv = () => {
         };
       }
       if (isLispExpr(result)) {
+        log.debug('[exec] result!!', listExprToString(result));
         return {
           content: listExprToString(result),
           hint: 'ListExpr',
@@ -102,6 +103,9 @@ export const useFilthEnv = () => {
 };
 
 /**
+ *
+ * (define width 100)
+ * (cdr '(10 10 width width)
  *
  * (canvas (250 250) ((fillStyle white) (fillRect '(10 10 100 100))))
  */

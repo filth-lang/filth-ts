@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { parse } from '../parse';
 
-describe('Lisp Interpreter', () => {
+describe('Filth', () => {
   describe('Parser', () => {
     it('should parse atoms', () => {
       expect(parse('123')).toBe(123);
@@ -12,7 +12,7 @@ describe('Lisp Interpreter', () => {
       expect(parse('nil')).toBe(null);
       expect(parse('true')).toBe(true);
       expect(parse('false')).toBe(false);
-      expect(parse('"Hello, world!"')).toBe('Hello, world!');
+      expect(parse('"Hello, world!"')).toBe('"Hello, world!"');
     });
 
     it('should parse lists', () => {

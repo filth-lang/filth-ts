@@ -58,6 +58,7 @@ export const isLispBuiltinFunction = (
 export const isLispExpr = (expr: LispExpr): expr is LispExpr =>
   isLispBasicValue(expr) ||
   isLispValue(expr) ||
+  isList(expr) ||
   isLispBuiltinFunction(expr) ||
   isLispFunction(expr) ||
   isQuotedExpr(expr);

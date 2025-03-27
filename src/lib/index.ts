@@ -27,14 +27,16 @@ export const evaluate = async (
   env: Environment,
   expr: LispExpr
 ): Promise<LispExpr> => {
-  // log.debug('[evaluate] expr', expr);
   if (expr === undefined || expr === null) {
     throw new EvaluationError('Cannot evaluate undefined or null expression');
   }
 
   if (isLispBasicValue(expr)) {
+    // a number, boolean, or null
     return expr;
   }
+
+  // log.debug('[evaluate] lookup', expr);
 
   if (isString(expr)) {
     // If the string is already a string value (not a symbol), return it as is
@@ -42,19 +44,14 @@ export const evaluate = async (
       return expr.slice(1, -1);
     }
     // Otherwise, it's a symbol that needs to be looked up
-    try {
-      const { value } = env.lookup(expr);
+    // try {
+    const { value } = env.lookup(expr);
 
-      log.debug('[evaluate] lookup', expr, value);
-      if (isString(value)) {
-        // If the value is another symbol, look it up recursively
-        return evaluate(env, value);
-      }
-      return value;
-    } catch {
-      // If the symbol is not found, it's a string literal
-      return expr;
+    if (isString(value)) {
+      // If the value is another symbol, look it up recursively
+      return evaluate(env, value);
     }
+    return value;
   }
 
   if ('type' in expr) {
@@ -112,6 +109,7 @@ export const evaluate = async (
             // log.debug('[define] hasRest', hasRest);
             // log.debug('[define] parameters', parameters);
             // log.debug('[define] restParam', restParam);
+            // log.debug('[define] body', body);
 
             // Create lambda expression
             const lambda: LispFunction = {
@@ -320,7 +318,7 @@ export const evaluate = async (
               );
               return fn(...evaluatedArgs);
             } else if (isLispFunction(fn)) {
-              log.debug('[evaluate] lambda function', operator);
+              // log.debug('[evaluate] lambda function', operator);
               // Handle lambda function application
               const newEnv = fn.env.create();
 
