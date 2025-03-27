@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are an expert in Preact, and Vite.
+
+this project uses Bun not npm
