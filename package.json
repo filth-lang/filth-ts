@@ -1,8 +1,21 @@
 {
   "name": "filth",
-  "private": true,
+  "private": false,
   "version": "0.2.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
@@ -14,11 +27,10 @@
     "outdated": "bunx npm-check-updates --interactive --format group",
     "tsc": "tsc --noEmit",
     "check": "npm-run-all --parallel tsc lint lint:format",
-    "knip": "knip"
+    "knip": "knip",
+    "prepare": "bunx --bun vite build"
   },
-  "dependencies": {
-    "superjson": "^2.2.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
@@ -33,8 +45,10 @@
     "npm-run-all": "^4.1.5",
     "preact": "^10.26.4",
     "prettier": "^3.5.3",
+    "superjson": "^2.2.2",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.28.0",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "vite-plugin-dts": "^3.7.3"
   }
 }
