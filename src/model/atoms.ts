@@ -47,3 +47,7 @@ export const addSystemMessageAtom = atom(
     set(messagesAtom, [...get(messagesAtom), systemMessage]);
   }
 );
+
+export const clearMessagesAtom = atom(null, (_get, set) => {
+  set(messagesAtom, []);
+});

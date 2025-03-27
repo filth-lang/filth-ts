@@ -192,7 +192,10 @@ const defineCanvas = (env: EvalEnvironment) => {
 
       const canvasEnv = new CanvasEnv(env, canvas);
 
-      await evaluate(canvasEnv, body[0]);
+      let result: LispExpr | null = null;
+      for (const expr of body) {
+        result = await evaluate(canvasEnv, expr);
+      }
 
       log.debug('[defineCanvas] canvasEnv', canvasEnv);
 
