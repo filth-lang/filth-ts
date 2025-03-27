@@ -7,6 +7,31 @@ Filth was created by Alexander Veenendaal in the 10s. It is an imperative,
 stack-based language and programming environment. It's also not used by NASA.
 
 
+
+# ------------------------------- Pattern Matching -----------------------------
+
+
+{a, b, c} = {:hello, "world", 42}
+
+[ $1 $2 $3 ] :v :v :v myMatch define # ok
+hello filth world myMatch # hello filth world ok
+
+[ $1 $0 ] :* :* swap define
+
+atoms
+
+:at atom
+:va value
+:[] list
+:{} map
+:wd word
+:bf
+:re regex
+:dt datetime
+:** any
+
+
+
 ```filth
 # This is a comment
 // This is also a comment
