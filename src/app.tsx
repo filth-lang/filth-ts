@@ -1,10 +1,19 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'preact/hooks';
 import './app.css';
 import { createLog } from '@helpers/log';
 import { createEnv } from '@lib/create';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import SJSON from 'superjson';
+import { LispExpr } from './lib/types';
+
+const packageVersion = __APP_VERSION__;
 
 const log = createLog('app');
 
@@ -20,7 +29,48 @@ const addMessageAtom = atom(null, (get, set, message: Message) => {
   set(messagesAtom, [...get(messagesAtom), message]);
 });
 
-const clearMessagesAtom = atom(null, (get, set) => {
+const addLogMessageAtom = atom(null, (get, set, message: string) => {
+  const logMessage: Message = {
+    content: message,
+    id: crypto.randomUUID(),
+    type: 'log'
+  };
+  set(messagesAtom, [...get(messagesAtom), logMessage]);
+});
+
+const addErrorMessageAtom = atom(null, (get, set, error: Error) => {
+  const errorMessage: Message = {
+    content: error instanceof Error ? error.message : 'Unknown error',
+    id: crypto.randomUUID(),
+    type: 'error'
+  };
+  set(messagesAtom, [...get(messagesAtom), errorMessage]);
+});
+
+const addSystemMessageAtom = atom(
+  null,
+  (get, set, message: string, options: Partial<Message> = {}) => {
+    const systemMessage: Message = {
+      content: message,
+      id: crypto.randomUUID(),
+      type: 'sys',
+      ...options
+    };
+    set(messagesAtom, [...get(messagesAtom), systemMessage]);
+  }
+);
+
+const createSystemMessage = (
+  message: string,
+  options: Partial<Message> = {}
+): Message => ({
+  content: message,
+  id: crypto.randomUUID(),
+  type: 'sys',
+  ...options
+});
+
+const clearMessagesAtom = atom(null, (_get, set) => {
   set(messagesAtom, []);
 });
 
@@ -28,11 +78,29 @@ type Message = {
   content?: string;
   id: string;
   json?: string;
-  type: 'input' | 'output' | 'error';
+  link?: string;
+  type: 'input' | 'output' | 'error' | 'log' | 'sys';
 };
 
 const useFilthEnv = () => {
+  const addMessage = useSetAtom(addMessageAtom);
+  const addLogMessage = useSetAtom(addLogMessageAtom);
+  const isInitialized = useRef(false);
   const env = useRef(createEnv());
+
+  useEffect(() => {
+    if (isInitialized.current) {
+      return;
+    }
+    isInitialized.current = true;
+
+    env.current.define('log', (...args: LispExpr[]) => {
+      addLogMessage(args.map(arg => arg?.toString() ?? '').join(' '));
+      return null;
+    });
+
+    // env.current.eval('(log "Hello, world!")');
+  }, [addMessage, addLogMessage]);
 
   const exec = useCallback(async (command: string): Promise<Message> => {
     try {
@@ -55,7 +123,7 @@ const useFilthEnv = () => {
     }
   }, []);
 
-  return { env: env.current, exec };
+  return { exec };
 };
 
 export const App = () => {
@@ -65,10 +133,27 @@ export const App = () => {
   const addToHistory = useSetAtom(addToHistoryAtom);
   const messages = useAtomValue(messagesAtom);
   const addMessage = useSetAtom(addMessageAtom);
+  const addSystemMessage = useSetAtom(addSystemMessageAtom);
   const clearMessages = useSetAtom(clearMessagesAtom);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { exec } = useFilthEnv();
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages, isLoading]);
+
+  // useEffect(() => {
+  //   if (messages.length === 0) {
+  //     addSystemMessage(`Filth REPL v${packageVersion}`);
+  //   }
+  //   log.debug('messages', messages, messages.length);
+  // }, [addSystemMessage, messages]);
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -132,12 +217,22 @@ export const App = () => {
     inputRef.current?.focus();
   }, [messages]);
 
+  const displayMessages = useMemo(
+    () => [
+      createSystemMessage(`Filth REPL v${packageVersion}`, {
+        link: 'https://github.com/filth-lang/filthjs'
+      }),
+      ...messages
+    ],
+    [messages]
+  );
+
   return (
     <div class="chat-container">
-      <div class="messages-container">
-        {messages.map(message => (
+      <div class="messages-container" ref={messagesContainerRef}>
+        {displayMessages.map(message => (
           <div class={`message ${message.type}`} key={message.id}>
-            <span class="prompt">{message.type === 'input' ? '>' : ''}</span>
+            <span class="prompt">{getMessagePrompt(message)}</span>
             <span class="content">{getMessageContent(message)}</span>
           </div>
         ))}
@@ -155,7 +250,7 @@ export const App = () => {
             disabled={isLoading}
             onInput={e => setInput((e.target as HTMLInputElement).value)}
             onKeyDown={handleKeyDown}
-            placeholder="Enter command..."
+            placeholder="Ready"
             ref={inputRef}
             type="text"
             value={input}
@@ -169,12 +264,32 @@ export const App = () => {
   );
 };
 
-const getMessageContent = (message: Message): string => {
+const getMessagePrompt = (message: Message): string => {
+  switch (message.type) {
+    case 'input':
+      return '>';
+    case 'error':
+      return 'Error:';
+    case 'log':
+      return '[log] ';
+    default:
+      return '';
+  }
+};
+
+const getMessageContent = (message: Message): string | JSX.Element => {
+  let content = message.content ?? '';
+
   if (message.type === 'output') {
     if (message.json) {
       const json = SJSON.parse(message.json);
-      return JSON.stringify(json);
+      content = JSON.stringify(json);
     }
   }
-  return message.content ?? '';
+
+  if (message.link) {
+    return <a href={message.link}>{content}</a>;
+  }
+
+  return content;
 };

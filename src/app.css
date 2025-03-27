@@ -7,6 +7,7 @@
   --hover-color  : #2563eb;
   --prompt-color : #F6993F;
   --error-color  : #ef4444;
+  --log-color    : #64748b;
   --font-mono    : ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -17,6 +18,7 @@ body {
   background-color: var(--bg-color);
   color           : var(--text-color);
   line-height     : 1.5;
+  overflow-y      : hidden;
 }
 
 .chat-container {
@@ -50,12 +52,40 @@ body {
   user-select: none;
 }
 
+.message.log .prompt {
+  color      : var(--log-color);
+  user-select: none;
+}
+
 .message .content {
   flex: 1;
 }
 
 .message.error .content {
   color: var(--error-color);
+}
+
+.message.log .content {
+  color: var(--log-color);
+}
+
+.message.sys .content {
+  color: var(--text-color);
+  text-shadow: 0 0 0px #fff,
+    0 0 1px #fff,
+    0 0 3px #fff,
+    0 0 9px #0fa;
+  font-size  : 1.2rem;
+  user-select: none;
+}
+
+.message.sys .content a {
+  color: var(--text-color);
+  text-shadow: 0 0 0px #fff,
+    0 0 1px #fff,
+    0 0 3px #fff,
+    0 0 9px #0fa;
+  text-decoration: none;
 }
 
 .input-container {
