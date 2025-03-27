@@ -37,7 +37,7 @@ export const ReplScreen = () => {
   const addMessage = useSetAtom(addMessageAtom);
   const clearMessages = useSetAtom(clearMessagesAtom);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { exec } = useFilthEnv();
 
@@ -90,6 +90,12 @@ export const ReplScreen = () => {
         return;
       }
 
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+        return;
+      }
+
       if (e.key === 'Tab') {
         e.preventDefault();
         const closingBrackets = getClosingBrackets(input);
@@ -107,31 +113,63 @@ export const ReplScreen = () => {
       }
 
       if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (historyIndex < history.length - 1) {
-          const newIndex = historyIndex + 1;
-          setHistoryIndex(newIndex);
-          setInput(history[history.length - 1 - newIndex]);
+        const textarea = e.target as HTMLTextAreaElement;
+
+        // Only navigate history if cursor is at the end of first line or there are no newlines
+        if (textarea.selectionStart === 0) {
+          e.preventDefault();
+          if (historyIndex < history.length - 1) {
+            const newIndex = historyIndex + 1;
+            setHistoryIndex(newIndex);
+            setInput(history[history.length - 1 - newIndex]);
+          }
         }
       } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        if (historyIndex > 0) {
-          const newIndex = historyIndex - 1;
-          setHistoryIndex(newIndex);
-          setInput(history[history.length - 1 - newIndex]);
-        } else {
-          setHistoryIndex(-1);
-          setInput('');
+        const textarea = e.target as HTMLTextAreaElement;
+
+        // Only navigate history if cursor is at the end of first line or there are no newlines
+        if (input.length === textarea.selectionEnd) {
+          e.preventDefault();
+          if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            setInput(history[history.length - 1 - newIndex]);
+          } else {
+            setHistoryIndex(-1);
+            setInput('');
+          }
         }
       }
     },
-    [history, historyIndex, input, isLoading]
+    [history, historyIndex, input, isLoading, handleSubmit]
   );
 
   // Focus input on mount and after messages update
   useEffect(() => {
     inputRef.current?.focus();
   }, [messages]);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    const adjustHeight = () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 20 * 24)}px`; // 20em max height
+    };
+
+    // Adjust height on input changes
+    textarea.addEventListener('input', adjustHeight);
+    // Initial adjustment
+    adjustHeight();
+
+    return () => {
+      textarea.removeEventListener('input', adjustHeight);
+    };
+  }, [input]); // Add input as a dependency to trigger on state changes
 
   const displayMessages = useMemo(
     () => [
@@ -162,14 +200,14 @@ export const ReplScreen = () => {
       <div class="input-container">
         <form class="input-form" onSubmit={handleSubmit}>
           <div class="input-wrapper">
-            <input
+            <textarea
               class="input-field"
               disabled={isLoading}
-              onInput={e => setInput((e.target as HTMLInputElement).value)}
+              onInput={e => setInput((e.target as HTMLTextAreaElement).value)}
               onKeyDown={handleKeyDown}
               placeholder="Ready"
               ref={inputRef}
-              type="text"
+              rows={1}
               value={input}
             />
             {getClosingBrackets(input) && (
