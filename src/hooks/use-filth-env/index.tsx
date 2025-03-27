@@ -1,6 +1,11 @@
 import { createLog } from '@helpers/log';
 import { createEnv, EvalEnvironment } from '@lib/create';
-import { isFilthExpr, isFilthFunction, listExprToString } from '@lib/helpers';
+import {
+  isFilthBuiltinFunction,
+  isFilthExpr,
+  isFilthFunction,
+  listExprToString
+} from '@lib/helpers';
 import { FilthExpr, FilthFunction, FilthList } from '@lib/types';
 import { addLogMessageAtom, addMessageAtom } from '@model/atoms';
 import { Message } from '@model/types';
@@ -46,7 +51,7 @@ export const useFilthEnv = () => {
     try {
       const result = await env.current.eval(command);
 
-      // log.debug('[exec] result', result);
+      log.debug('[exec] result', result, isFilthBuiltinFunction(result));
 
       if (isFilthCanvas(result as FilthCanvas)) {
         const canvas = (result as FilthCanvas).value;
@@ -74,11 +79,20 @@ export const useFilthEnv = () => {
           type: 'canvas'
         };
       }
-      log.debug('[exec] result!!', listExprToString(result));
+
+      if (isFilthFunction(result)) {
+        return {
+          content: listExprToString(result),
+          hint: 'FilthFunction',
+          id: crypto.randomUUID(),
+          type: 'output'
+        };
+      }
+      // log.debug('[exec] result!!', listExprToString(result));
       if (isFilthExpr(result)) {
         return {
           content: listExprToString(result),
-          hint: 'ListExpr',
+          hint: 'FilthExpr',
           id: crypto.randomUUID(),
           type: 'output'
         };

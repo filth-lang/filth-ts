@@ -36,6 +36,14 @@ export class Environment {
     });
   }
 
+  getBindings(): Map<string, BindingValue> {
+    const parentBindings = this.parent?.getBindings();
+    if (parentBindings) {
+      return new Map([...parentBindings, ...this.bindings]);
+    }
+    return this.bindings;
+  }
+
   lookup(name: string): LookupResult {
     const value = this.bindings.get(name);
     if (value !== undefined) {

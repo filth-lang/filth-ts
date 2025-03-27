@@ -8,6 +8,14 @@ export const inputHistoryAtom = atomWithStorage<string[]>(
 );
 
 export const addToHistoryAtom = atom(null, (get, set, command: string) => {
+  // if the command is the same as the last item in the history, don't add it
+  if (
+    get(inputHistoryAtom).length > 0 &&
+    get(inputHistoryAtom)[get(inputHistoryAtom).length - 1] === command
+  ) {
+    return;
+  }
+
   set(inputHistoryAtom, [...get(inputHistoryAtom), command]);
 });
 

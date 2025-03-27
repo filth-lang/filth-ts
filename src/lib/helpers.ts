@@ -58,8 +58,7 @@ export const isFilthValue = (expr: FilthExpr): expr is FilthValue =>
 
 export const isFilthBuiltinFunction = (
   expr: FilthExpr
-): expr is FilthBuiltinFunction =>
-  typeof expr === 'function' && 'type' in expr && expr.type === 'builtin';
+): expr is FilthBuiltinFunction => typeof expr === 'function'; // && 'type' in expr && expr.type === 'builtin';
 
 export const isFilthExpr = (expr: FilthExpr): expr is FilthExpr =>
   isFilthBasicValue(expr) ||
@@ -112,11 +111,20 @@ export const checkRestParams = (params: FilthExpr[]) => {
 };
 
 export const listExprToString = (expr: FilthExpr): string => {
+  if (isFilthValue(expr)) {
+    return expr + '';
+  }
+  if (isFilthNil(expr)) {
+    return 'nil';
+  }
   if (isFilthList(expr)) {
     return `( ${expr.elements.map(listExprToString).join(' ')} )`;
   }
   if (isFilthFunction(expr)) {
-    return `#<function ${expr.params.map(param => param).join(' ')}>`;
+    return `( lambda (${expr.params.map(param => param).join(' ')}) ${listExprToString(expr.body)} )`;
+  }
+  if (isFilthBuiltinFunction(expr)) {
+    return `#<builtin ${expr.name}>`;
   }
   return JSON.stringify(expr);
 };

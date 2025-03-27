@@ -284,6 +284,9 @@ export const evaluate = async (
             const body = args.slice(1);
             const newEnv = env.create();
 
+            // log.debug('[let] bindings', bindings);
+            // log.debug('[let] body', body);
+
             for (const binding of bindings.elements) {
               if (!isFilthList(binding)) {
                 continue;
@@ -294,8 +297,12 @@ export const evaluate = async (
                 newEnv.define(name, evaluatedValue);
               }
             }
+
+            // log.debug('[let] newEnv', newEnv);
+
             let result: FilthExpr | null = null;
             for (const expr of body) {
+              // log.debug('[let] expr', expr);
               result = await evaluate(newEnv, expr);
             }
             return result;
@@ -312,6 +319,11 @@ export const evaluate = async (
           // }
 
           default:
+            // log.debug('[evaluate] operator', operator);
+            // log.debug(
+            //   '[evaluate] bindings',
+            //   Array.from(env.getBindings().keys())
+            // );
             // For non-special forms, evaluate the operator and apply it
             const { options, value: fn } = env.lookup(operator);
 
@@ -331,7 +343,15 @@ export const evaluate = async (
             } else if (isFilthFunction(fn)) {
               // log.debug('[evaluate] lambda function', operator);
               // Handle lambda function application
-              const newEnv = fn.env.create();
+
+              // note: the fn.env is the environment in which the lambda was defined
+              // but we want the lambda to be evaluated in the current environment
+              // const newEnv = fn.env.create();
+              const newEnv = env.create();
+              // log.debug(
+              //   '[evaluate] lambda bindings',
+              //   Array.from(newEnv.getBindings().keys())
+              // );
 
               // bind regular parameters
               const evaluatedArgs = args;
@@ -350,6 +370,8 @@ export const evaluate = async (
               }
 
               return evaluate(newEnv, fn.body);
+            } else if (isFilthBasicValue(fn)) {
+              return fn;
             } else {
               throw new EvaluationError(
                 `Cannot apply ${JSON.stringify(fn)} as a function`
