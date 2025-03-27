@@ -15,8 +15,19 @@ describe('Filth', () => {
       expect(parse('"Hello, world!"')).toBe('"Hello, world!"');
     });
 
+    it('should parse multi-line strings', () => {
+      expect(parse('"Hello,\nworld!"')).toBe('"Hello, world!"');
+    });
+
     it('should parse lists', () => {
       expect(parse('(1 2 3)')).toEqual({
+        elements: [1, 2, 3],
+        type: 'list'
+      });
+    });
+
+    it('should parse multi-line lists', () => {
+      expect(parse('(1\n2\n3)')).toEqual({
         elements: [1, 2, 3],
         type: 'list'
       });

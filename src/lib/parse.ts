@@ -17,6 +17,10 @@ export const parse = (input: string): FilthExpr => {
     const char = input[i];
 
     if (inQuotes) {
+      if (char === '\n') {
+        currentToken += ' ';
+        continue;
+      }
       currentToken += char;
       if (char === '"') {
         inQuotes = !inQuotes;
@@ -37,6 +41,10 @@ export const parse = (input: string): FilthExpr => {
     }
 
     if (char === '\n') {
+      if (currentToken) {
+        tokens.push(currentToken);
+        currentToken = '';
+      }
       continue;
     }
 
