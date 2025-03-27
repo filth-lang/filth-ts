@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
+    "build:site": "bunx --bun vite build --config vite.site.config.ts",
     "lint:format": "prettier --cache --check .",
     "lint": "eslint --cache .",
     "preview": "bunx --bun vite preview",
