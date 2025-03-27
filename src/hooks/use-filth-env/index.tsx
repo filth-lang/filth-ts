@@ -108,6 +108,7 @@ export const useFilthEnv = () => {
  * (cdr '(10 10 width width)
  *
  * (canvas (250 250) ((fillStyle white) (fillRect '(10 10 100 100))))
+ * (canvas (250 250) ((fillStyle white) (fillRect '(10 10 width width))))
  */
 class CanvasEnv extends EvalEnvironment {
   canvas: HTMLCanvasElement | null = null;
