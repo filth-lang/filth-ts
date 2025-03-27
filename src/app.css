@@ -69,6 +69,10 @@ body {
   color: var(--log-color);
 }
 
+span[title] {
+  cursor: help;
+}
+
 .message.sys .content {
   color: var(--text-color);
   text-shadow: 0 0 0px #fff,

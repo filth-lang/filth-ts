@@ -5,60 +5,27 @@ import {
   useRef,
   useState
 } from 'preact/hooks';
+import { JSX } from 'preact/jsx-runtime';
 import './app.css';
 import { createLog } from '@helpers/log';
-import { createEnv } from '@lib/create';
+import { createEnv, EvalEnvironment } from '@lib/create';
+import {
+  addLogMessageAtom,
+  addMessageAtom,
+  addSystemMessageAtom,
+  addToHistoryAtom,
+  inputHistoryAtom,
+  messagesAtom
+} from '@model/atoms';
+import { Message } from '@model/types';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
 import SJSON from 'superjson';
+import { isList, listExprToString } from './lib/helpers';
 import { LispExpr } from './lib/types';
 
 const packageVersion = __APP_VERSION__;
 
 const log = createLog('app');
-
-const inputHistoryAtom = atomWithStorage<string[]>('filth:input-history', []);
-
-const addToHistoryAtom = atom(null, (get, set, command: string) => {
-  set(inputHistoryAtom, [...get(inputHistoryAtom), command]);
-});
-
-const messagesAtom = atomWithStorage<Message[]>('filth:messages', []);
-
-const addMessageAtom = atom(null, (get, set, message: Message) => {
-  set(messagesAtom, [...get(messagesAtom), message]);
-});
-
-const addLogMessageAtom = atom(null, (get, set, message: string) => {
-  const logMessage: Message = {
-    content: message,
-    id: crypto.randomUUID(),
-    type: 'log'
-  };
-  set(messagesAtom, [...get(messagesAtom), logMessage]);
-});
-
-const addErrorMessageAtom = atom(null, (get, set, error: Error) => {
-  const errorMessage: Message = {
-    content: error instanceof Error ? error.message : 'Unknown error',
-    id: crypto.randomUUID(),
-    type: 'error'
-  };
-  set(messagesAtom, [...get(messagesAtom), errorMessage]);
-});
-
-const addSystemMessageAtom = atom(
-  null,
-  (get, set, message: string, options: Partial<Message> = {}) => {
-    const systemMessage: Message = {
-      content: message,
-      id: crypto.randomUUID(),
-      type: 'sys',
-      ...options
-    };
-    set(messagesAtom, [...get(messagesAtom), systemMessage]);
-  }
-);
 
 const createSystemMessage = (
   message: string,
@@ -74,14 +41,6 @@ const clearMessagesAtom = atom(null, (_get, set) => {
   set(messagesAtom, []);
 });
 
-type Message = {
-  content?: string;
-  id: string;
-  json?: string;
-  link?: string;
-  type: 'input' | 'output' | 'error' | 'log' | 'sys';
-};
-
 const useFilthEnv = () => {
   const addMessage = useSetAtom(addMessageAtom);
   const addLogMessage = useSetAtom(addLogMessageAtom);
@@ -93,6 +52,9 @@ const useFilthEnv = () => {
       return;
     }
     isInitialized.current = true;
+
+    // set up filth global
+    (window as unknown as { filth: EvalEnvironment }).filth = env.current;
 
     env.current.define('log', (...args: LispExpr[]) => {
       addLogMessage(args.map(arg => arg?.toString() ?? '').join(' '));
@@ -107,6 +69,15 @@ const useFilthEnv = () => {
       const result = await env.current.eval(command);
 
       log.debug('[exec] result', result);
+
+      if (isList(result)) {
+        return {
+          content: listExprToString(result),
+          hint: 'ListExpr',
+          id: crypto.randomUUID(),
+          type: 'output'
+        };
+      }
 
       return {
         id: crypto.randomUUID(),
@@ -278,13 +249,17 @@ const getMessagePrompt = (message: Message): string => {
 };
 
 const getMessageContent = (message: Message): string | JSX.Element => {
-  let content = message.content ?? '';
+  let content: string | JSX.Element = message.content ?? '';
 
   if (message.type === 'output') {
     if (message.json) {
       const json = SJSON.parse(message.json);
       content = JSON.stringify(json);
     }
+  }
+
+  if (message.hint) {
+    content = <span title={message.hint}>{content}</span>;
   }
 
   if (message.link) {

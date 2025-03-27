@@ -7,7 +7,7 @@ import { LispExpr } from './types';
 
 const log = createLog('filth');
 
-class EvalEnvironment extends Environment {
+export class EvalEnvironment extends Environment {
   constructor(parent: Environment | null = null) {
     super(parent);
   }
@@ -18,7 +18,7 @@ class EvalEnvironment extends Environment {
 
   async eval(expr: string): Promise<LispExpr> {
     const parsed = parse(expr);
-    log.debug('[eval] parsed', parsed);
+    // log.debug('[eval] parsed', parsed);
     return evaluate(this, parsed);
   }
 }

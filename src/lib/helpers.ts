@@ -15,7 +15,7 @@ export const getLispType = (expr: LispExpr): string => {
   }
   return typeof expr === 'object' && 'type' in expr ? expr.type : typeof expr;
 };
-export const isPromise = (expr: LispExpr): expr is Promise<LispExpr> =>
+export const isPromise = (expr: LispExpr): boolean =>
   expr !== null &&
   typeof expr === 'object' &&
   'then' in expr &&
@@ -24,14 +24,11 @@ export const isPromise = (expr: LispExpr): expr is Promise<LispExpr> =>
 export const isString = (expr: LispExpr): expr is string =>
   typeof expr === 'string';
 
-export const isList = (expr: LispExpr): expr is LispList => {
-  return (
-    expr !== null &&
-    typeof expr === 'object' &&
-    'type' in expr &&
-    expr.type === 'list'
-  );
-};
+export const isList = (expr: LispExpr): expr is LispList =>
+  expr !== null &&
+  typeof expr === 'object' &&
+  'type' in expr &&
+  expr.type === 'list';
 
 export const isLispFunction = (expr: LispExpr): expr is LispFunction =>
   expr !== null &&
@@ -57,6 +54,13 @@ export const isLispBuiltinFunction = (
   expr: LispExpr
 ): expr is LispBuiltinFunction =>
   typeof expr === 'function' && 'type' in expr && expr.type === 'builtin';
+
+export const isLispExpr = (expr: LispExpr): expr is LispExpr =>
+  isLispBasicValue(expr) ||
+  isLispValue(expr) ||
+  isLispBuiltinFunction(expr) ||
+  isLispFunction(expr) ||
+  isQuotedExpr(expr);
 
 export const isTruthy = (value: null | false | undefined | string | LispExpr) =>
   value !== null &&
@@ -94,4 +98,14 @@ export const checkRestParams = (params: LispExpr[]) => {
   }
 
   return { hasRest, parameters, restParam };
+};
+
+export const listExprToString = (expr: LispExpr): string => {
+  if (isList(expr)) {
+    return `( ${expr.elements.map(listExprToString).join(' ')} )`;
+  }
+  if (isLispFunction(expr)) {
+    return `#<function ${expr.params.map(param => param).join(' ')}>`;
+  }
+  return JSON.stringify(expr);
 };

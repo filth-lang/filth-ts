@@ -27,7 +27,7 @@ export const evaluate = async (
   env: Environment,
   expr: LispExpr
 ): Promise<LispExpr> => {
-  log.debug('[evaluate] expr', expr);
+  // log.debug('[evaluate] expr', expr);
   if (expr === undefined || expr === null) {
     throw new EvaluationError('Cannot evaluate undefined or null expression');
   }
@@ -290,13 +290,23 @@ export const evaluate = async (
             return result;
           }
 
+          case '=': {
+            const [left, right] = args;
+            const evaluatedLeft = await evaluate(env, left);
+            const evaluatedRight = await evaluate(env, right);
+
+            log.debug('[evaluate] =', evaluatedLeft, evaluatedRight);
+
+            return evaluatedLeft === evaluatedRight;
+          }
+
           default:
             // For non-special forms, evaluate the operator and apply it
             const fn = env.lookup(operator);
 
             if (typeof fn === 'function') {
               // Handle built-in functions
-              // console.debug('[operator] args', args);
+
               const evaluatedArgs = await Promise.all(
                 args.map(async arg => await evaluate(env, arg))
               );
@@ -338,7 +348,7 @@ export const evaluate = async (
           return fn;
         }
 
-        // log.debug('[operator] evaluating operator', operator, 'result', null);
+        log.debug('[operator] evaluating operator', operator, 'result', null);
         if (isLispFunction(fn)) {
           // Handle lambda function application
           const newEnv = fn.env.create();

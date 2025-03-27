@@ -18,6 +18,12 @@
       ],
       "@lib/*": [
         "./src/lib/*"
+      ],
+      "@model/*": [
+        "./src/model/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
       ]
     }
   }
