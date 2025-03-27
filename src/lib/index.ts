@@ -43,7 +43,9 @@ export const evaluate = async (
     }
     // Otherwise, it's a symbol that needs to be looked up
     try {
-      const value = env.lookup(expr);
+      const { value } = env.lookup(expr);
+
+      log.debug('[evaluate] lookup', expr, value);
       if (isString(value)) {
         // If the value is another symbol, look it up recursively
         return evaluate(env, value);
@@ -290,36 +292,41 @@ export const evaluate = async (
             return result;
           }
 
-          case '=': {
-            const [left, right] = args;
-            const evaluatedLeft = await evaluate(env, left);
-            const evaluatedRight = await evaluate(env, right);
+          // case '=': {
+          //   const [left, right] = args;
+          //   const evaluatedLeft = await evaluate(env, left);
+          //   const evaluatedRight = await evaluate(env, right);
 
-            log.debug('[evaluate] =', evaluatedLeft, evaluatedRight);
+          //   log.debug('[evaluate] =', evaluatedLeft, evaluatedRight);
 
-            return evaluatedLeft === evaluatedRight;
-          }
+          //   return evaluatedLeft === evaluatedRight;
+          // }
 
           default:
             // For non-special forms, evaluate the operator and apply it
-            const fn = env.lookup(operator);
+            const { options, value: fn } = env.lookup(operator);
 
             if (typeof fn === 'function') {
               // Handle built-in functions
+              // log.debug('[evaluate] built-in function', operator);
 
+              if (options.skipEvaluateArgs) {
+                return fn(...args);
+              }
+
+              // const evaluatedArgs = args;
               const evaluatedArgs = await Promise.all(
                 args.map(async arg => await evaluate(env, arg))
               );
               return fn(...evaluatedArgs);
             } else if (isLispFunction(fn)) {
+              log.debug('[evaluate] lambda function', operator);
               // Handle lambda function application
               const newEnv = fn.env.create();
 
               // bind regular parameters
               const evaluatedArgs = args;
-              // const evaluatedArgs = await Promise.all(
-              //   args.map(async arg => await evaluate(env, arg))
-              // );
+
               for (let ii = 0; ii < fn.params.length; ii++) {
                 newEnv.define(fn.params[ii], evaluatedArgs[ii]);
               }
@@ -348,7 +355,7 @@ export const evaluate = async (
           return fn;
         }
 
-        log.debug('[operator] evaluating operator', operator, 'result', null);
+        // log.debug('[operator] evaluating operator', operator, 'result', null);
         if (isLispFunction(fn)) {
           // Handle lambda function application
           const newEnv = fn.env.create();

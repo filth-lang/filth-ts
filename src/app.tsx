@@ -1,16 +1,9 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { JSX } from 'preact/jsx-runtime';
 import './app.css';
 import { createLog } from '@helpers/log';
-import { createEnv, EvalEnvironment } from '@lib/create';
+import { useFilthEnv } from '@hooks/use-filth-env';
 import {
-  addLogMessageAtom,
   addMessageAtom,
   addSystemMessageAtom,
   addToHistoryAtom,
@@ -20,8 +13,6 @@ import {
 import { Message } from '@model/types';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import SJSON from 'superjson';
-import { isList, listExprToString } from './lib/helpers';
-import { LispExpr } from './lib/types';
 
 const packageVersion = __APP_VERSION__;
 
@@ -40,62 +31,6 @@ const createSystemMessage = (
 const clearMessagesAtom = atom(null, (_get, set) => {
   set(messagesAtom, []);
 });
-
-const useFilthEnv = () => {
-  const addMessage = useSetAtom(addMessageAtom);
-  const addLogMessage = useSetAtom(addLogMessageAtom);
-  const isInitialized = useRef(false);
-  const env = useRef(createEnv());
-
-  useEffect(() => {
-    if (isInitialized.current) {
-      return;
-    }
-    isInitialized.current = true;
-
-    // set up filth global
-    (window as unknown as { filth: EvalEnvironment }).filth = env.current;
-
-    env.current.define('log', (...args: LispExpr[]) => {
-      addLogMessage(args.map(arg => arg?.toString() ?? '').join(' '));
-      return null;
-    });
-
-    // env.current.eval('(log "Hello, world!")');
-  }, [addMessage, addLogMessage]);
-
-  const exec = useCallback(async (command: string): Promise<Message> => {
-    try {
-      const result = await env.current.eval(command);
-
-      log.debug('[exec] result', result);
-
-      if (isList(result)) {
-        return {
-          content: listExprToString(result),
-          hint: 'ListExpr',
-          id: crypto.randomUUID(),
-          type: 'output'
-        };
-      }
-
-      return {
-        id: crypto.randomUUID(),
-        json: SJSON.stringify(result),
-        type: 'output'
-      };
-    } catch (error) {
-      log.error(error);
-      return {
-        content: error instanceof Error ? error.message : 'Unknown error',
-        id: crypto.randomUUID(),
-        type: 'error'
-      };
-    }
-  }, []);
-
-  return { exec };
-};
 
 export const App = () => {
   const [input, setInput] = useState('');
@@ -255,6 +190,44 @@ const getMessageContent = (message: Message): string | JSX.Element => {
     if (message.json) {
       const json = SJSON.parse(message.json);
       content = JSON.stringify(json);
+    }
+  }
+
+  if (message.type === 'canvas' && message.json) {
+    const canvasData = SJSON.parse(message.json) as {
+      height: number;
+      imageData: {
+        data: number[];
+        height: number;
+        width: number;
+      } | null;
+      width: number;
+    };
+    const imageData = canvasData.imageData;
+    if (imageData && imageData.width > 0 && imageData.height > 0) {
+      return (
+        <canvas
+          ref={el => {
+            if (el) {
+              el.width = canvasData.width;
+              el.height = canvasData.height;
+              const ctx = el.getContext('2d');
+              if (ctx) {
+                try {
+                  const newImageData = new ImageData(
+                    new Uint8ClampedArray(imageData.data),
+                    imageData.width,
+                    imageData.height
+                  );
+                  ctx.putImageData(newImageData, 0, 0);
+                } catch (error) {
+                  log.error('Failed to render canvas:', error);
+                }
+              }
+            }
+          }}
+        />
+      );
     }
   }
 

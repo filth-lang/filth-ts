@@ -5,6 +5,13 @@ export class FilthError extends Error {
   }
 }
 
+export class FilthArgumentError extends FilthError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FilthArgumentError';
+  }
+}
+
 export class ParseError extends FilthError {
   constructor(message: string) {
     super(message);

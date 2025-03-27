@@ -1,12 +1,14 @@
 import { createLog } from '@helpers/log';
 import { createEnv, EvalEnvironment } from '@lib/create';
 import { isLispExpr, isLispFunction, listExprToString } from '@lib/helpers';
-import { LispExpr, LispFunction } from '@lib/types';
+import { LispExpr, LispFunction, LispList } from '@lib/types';
 import { addLogMessageAtom, addMessageAtom } from '@model/atoms';
 import { Message } from '@model/types';
 import { useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'preact/hooks';
 import SJSON from 'superjson';
+import { evaluate } from '../../lib';
+import { FilthArgumentError } from '../../lib/error';
 
 const log = createLog('useFilthEnv');
 
@@ -46,6 +48,32 @@ export const useFilthEnv = () => {
 
       log.debug('[exec] result', result);
 
+      if (isFilthCanvas(result as FilthCanvas)) {
+        const canvas = (result as FilthCanvas).value;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return {
+            content: 'Failed to get canvas context',
+            id: crypto.randomUUID(),
+            type: 'error'
+          };
+        }
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return {
+          content: 'Canvas',
+          id: crypto.randomUUID(),
+          json: SJSON.stringify({
+            height: canvas.height,
+            imageData: {
+              data: Array.from(imageData.data),
+              height: imageData.height,
+              width: imageData.width
+            },
+            width: canvas.width
+          }),
+          type: 'canvas'
+        };
+      }
       if (isLispExpr(result)) {
         return {
           content: listExprToString(result),
@@ -54,14 +82,6 @@ export const useFilthEnv = () => {
           type: 'output'
         };
       }
-
-      // if (isFilthCanvas(result)) {
-      //   return {
-      //     content: 'Canvas',
-      //     id: crypto.randomUUID(),
-      //     type: 'canvas'
-      //   };
-      // }
 
       return {
         id: crypto.randomUUID(),
@@ -81,29 +101,114 @@ export const useFilthEnv = () => {
   return { exec };
 };
 
+/**
+ *
+ * (canvas (250 250) ((fillStyle white) (fillRect '(10 10 100 100))))
+ */
+class CanvasEnv extends EvalEnvironment {
+  canvas: HTMLCanvasElement | null = null;
+
+  constructor(
+    parent: EvalEnvironment | null = null,
+    canvas: HTMLCanvasElement | null = null
+  ) {
+    super(parent);
+    this.canvas = canvas;
+
+    this.define(
+      'fillRect',
+      async (...args: LispExpr[]) => {
+        const evaluatedArgs = await Promise.all(
+          args.map(async arg => await evaluate(this, arg))
+        );
+
+        log.debug('fillRect', evaluatedArgs);
+        const props = evaluatedArgs[0] as LispList;
+        const [x, y, width, height] = props.elements;
+        const ctx = this.canvas?.getContext('2d');
+        if (ctx) {
+          ctx.fillRect(
+            x as number,
+            y as number,
+            width as number,
+            height as number
+          );
+        }
+        log.debug('fillRect', { height, width, x, y });
+
+        return null;
+      },
+      { skipEvaluateArgs: true }
+    );
+
+    this.define(
+      'fillStyle',
+      (...args: LispExpr[]) => {
+        log.debug('fillStyle', args);
+
+        const [color] = args;
+        const ctx = this.canvas?.getContext('2d');
+        if (ctx) {
+          log.debug('setting fillStyle', color);
+          ctx.fillStyle = color as string;
+        } else {
+          throw new FilthArgumentError('fillStyle must be called on a canvas');
+        }
+
+        return null;
+      },
+      { skipEvaluateArgs: true }
+    );
+  }
+}
+
 const defineCanvas = (env: EvalEnvironment) => {
-  env.define('canvas', (...args: LispExpr[]) => {
-    const [width, height] = args;
+  env.define(
+    'canvas',
+    async (...args: LispExpr[]) => {
+      // const [width = 100, height = 100] = args;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = width as number;
-    canvas.height = height as number;
+      const props = args[0] as LispList;
+      const body = args.slice(1);
 
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = 'green';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+      log.debug('[defineCanvas] props', props);
+      log.debug('[defineCanvas] args', args);
 
-    return {
-      body: null,
-      env: env.create(),
-      ftype: 'html:canvas',
-      params: [],
-      type: 'function',
-      value: canvas
-    };
-  });
+      // if (body.length !== 1) {
+      //   throw new FilthArgumentError('canvas must have exactly one body');
+      // }
+
+      const [width, height] = props.elements;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width as number;
+      canvas.height = height as number;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = 'green'; // Match the input-bg color from app.css
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      const canvasEnv = new CanvasEnv(env, canvas);
+
+      await evaluate(canvasEnv, body[0]);
+
+      log.debug('[defineCanvas] canvasEnv', canvasEnv);
+
+      return {
+        body: body[0],
+        env: canvasEnv,
+        ftype: 'html:canvas',
+        params: [],
+        type: 'function',
+        value: canvas
+      };
+    },
+    { skipEvaluateArgs: true }
+  );
+
+  log.debug('defineCanvas', env);
 };
 
 const isFilthCanvas = (expr: FilthCanvas): expr is FilthCanvas =>

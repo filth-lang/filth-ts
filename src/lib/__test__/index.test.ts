@@ -7,14 +7,20 @@ describe('Lisp Interpreter', () => {
     it('should define and lookup variables', () => {
       const env = new Environment();
       env.define('x', 42);
-      expect(env.lookup('x')).toBe(42);
+      expect(env.lookup('x')).toEqual({
+        options: {},
+        value: 42
+      });
     });
 
     it('should handle nested environments', () => {
       const parent = new Environment();
       parent.define('x', 42);
       const child = new Environment(parent);
-      expect(child.lookup('x')).toBe(42);
+      expect(child.lookup('x')).toEqual({
+        options: {},
+        value: 42
+      });
     });
 
     it('should throw on undefined variables', () => {
