@@ -1,28 +1,28 @@
 import { Environment } from './environment';
 
 // Base types
-export type LispBasicValue = number | boolean | null;
-export type LispValue = number | string | boolean | null;
+export type FilthBasicValue = number | boolean | null;
+export type FilthValue = number | string | boolean | null;
 
 // List types
-export type LispList = {
-  elements: LispExpr[];
+export type FilthList = {
+  elements: FilthExpr[];
   type: 'list';
 };
 
 // Quote type
 export type QuotedExpr = {
   type: 'quoted';
-  value: LispExpr;
+  value: FilthExpr;
 };
 
 // Function types
-export type LispBuiltinFunction = (
-  ...args: LispExpr[]
-) => LispExpr | Promise<LispExpr>;
+export type FilthBuiltinFunction = (
+  ...args: FilthExpr[]
+) => FilthExpr | Promise<FilthExpr>;
 
-export type LispFunction = {
-  body: LispExpr;
+export type FilthFunction = {
+  body: FilthExpr;
   env: Environment;
   params: string[];
   restParam?: string | null;
@@ -30,9 +30,9 @@ export type LispFunction = {
 };
 
 // Combined expression type
-export type LispExpr =
-  | LispValue
-  | LispBuiltinFunction
-  | LispList
+export type FilthExpr =
+  | FilthValue
+  | FilthBuiltinFunction
+  | FilthList
   | QuotedExpr
-  | LispFunction;
+  | FilthFunction;

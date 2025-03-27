@@ -1,7 +1,7 @@
 import { createLog } from '@helpers/log';
 import { createEnv, EvalEnvironment } from '@lib/create';
-import { isLispExpr, isLispFunction, listExprToString } from '@lib/helpers';
-import { LispExpr, LispFunction, LispList } from '@lib/types';
+import { isFilthExpr, isFilthFunction, listExprToString } from '@lib/helpers';
+import { FilthExpr, FilthFunction, FilthList } from '@lib/types';
 import { addLogMessageAtom, addMessageAtom } from '@model/atoms';
 import { Message } from '@model/types';
 import { useSetAtom } from 'jotai';
@@ -15,7 +15,7 @@ const log = createLog('useFilthEnv');
 export type FilthCanvas = {
   ftype: 'html:canvas';
   value: HTMLCanvasElement;
-} & LispFunction;
+} & FilthFunction;
 
 export const useFilthEnv = () => {
   const addMessage = useSetAtom(addMessageAtom);
@@ -32,7 +32,7 @@ export const useFilthEnv = () => {
     // set up filth global
     (window as unknown as { filth: EvalEnvironment }).filth = env.current;
 
-    env.current.define('log', (...args: LispExpr[]) => {
+    env.current.define('log', (...args: FilthExpr[]) => {
       addLogMessage(args.map(arg => arg?.toString() ?? '').join(' '));
       return null;
     });
@@ -74,8 +74,8 @@ export const useFilthEnv = () => {
           type: 'canvas'
         };
       }
-      if (isLispExpr(result)) {
-        log.debug('[exec] result!!', listExprToString(result));
+      log.debug('[exec] result!!', listExprToString(result));
+      if (isFilthExpr(result)) {
         return {
           content: listExprToString(result),
           hint: 'ListExpr',
@@ -121,13 +121,13 @@ class CanvasEnv extends EvalEnvironment {
 
     this.define(
       'fillRect',
-      async (...args: LispExpr[]) => {
+      async (...args: FilthExpr[]) => {
         const evaluatedArgs = await Promise.all(
           args.map(async arg => await evaluate(this, arg))
         );
 
         log.debug('fillRect', evaluatedArgs);
-        const props = evaluatedArgs[0] as LispList;
+        const props = evaluatedArgs[0] as FilthList;
         const [x, y, width, height] = props.elements;
         const ctx = this.canvas?.getContext('2d');
         if (ctx) {
@@ -147,7 +147,7 @@ class CanvasEnv extends EvalEnvironment {
 
     this.define(
       'fillStyle',
-      (...args: LispExpr[]) => {
+      (...args: FilthExpr[]) => {
         log.debug('fillStyle', args);
 
         const [color] = args;
@@ -169,10 +169,10 @@ class CanvasEnv extends EvalEnvironment {
 const defineCanvas = (env: EvalEnvironment) => {
   env.define(
     'canvas',
-    async (...args: LispExpr[]) => {
+    async (...args: FilthExpr[]) => {
       // const [width = 100, height = 100] = args;
 
-      const props = args[0] as LispList;
+      const props = args[0] as FilthList;
       const body = args.slice(1);
 
       log.debug('[defineCanvas] props', props);
@@ -196,7 +196,7 @@ const defineCanvas = (env: EvalEnvironment) => {
 
       const canvasEnv = new CanvasEnv(env, canvas);
 
-      let result: LispExpr | null = null;
+      let result: FilthExpr | null = null;
       for (const expr of body) {
         result = await evaluate(canvasEnv, expr);
       }
@@ -219,4 +219,4 @@ const defineCanvas = (env: EvalEnvironment) => {
 };
 
 const isFilthCanvas = (expr: FilthCanvas): expr is FilthCanvas =>
-  isLispFunction(expr) && expr.ftype === 'html:canvas';
+  isFilthFunction(expr) && expr.ftype === 'html:canvas';

@@ -17,7 +17,7 @@ interface AnimationContext {
 // Add event handling primitives to our Lisp environment
 class AnimEnvironment extends Environment {
   private context: AnimationContext;
-  private eventHandlers: Map<string, LispExpr[]> = new Map();
+  private eventHandlers: Map<string, FilthExpr[]> = new Map();
 
   constructor(context: AnimationContext, parent: Environment | null = null) {
     super(parent);
@@ -35,7 +35,7 @@ class AnimEnvironment extends Environment {
     });
 
     // Define an event handler
-    this.define("on-event", (eventName: string, handler: LispExpr) => {
+    this.define("on-event", (eventName: string, handler: FilthExpr) => {
       const handlers = this.eventHandlers.get(eventName) || [];
       handlers.push(handler);
       this.eventHandlers.set(eventName, handlers);

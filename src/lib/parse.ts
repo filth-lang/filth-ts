@@ -1,12 +1,12 @@
 import { createLog } from '@helpers/log';
 import { ParseError } from './error';
-import { isList } from './helpers';
-import { LispExpr } from './types';
+import { isFilthList } from './helpers';
+import { FilthExpr } from './types';
 
 const log = createLog('filth/parse');
 
 // Enhanced parser with quote support
-export const parse = (input: string): LispExpr => {
+export const parse = (input: string): FilthExpr => {
   // First, protect spaces within quoted strings
   const tokens: string[] = [];
   let currentToken = '';
@@ -70,7 +70,7 @@ export const parse = (input: string): LispExpr => {
   }
 
   // Handle multiple top-level expressions
-  const expressions: LispExpr[] = [];
+  const expressions: FilthExpr[] = [];
   while (tokens.length > 0) {
     expressions.push(parseTokens(tokens));
   }
@@ -90,7 +90,7 @@ export const parse = (input: string): LispExpr => {
 
 const isWhitespace = (token: string): boolean => token.trim() === '';
 
-const parseTokens = (tokens: string[]): LispExpr => {
+const parseTokens = (tokens: string[]): FilthExpr => {
   if (tokens.length === 0) {
     throw new ParseError('Unexpected EOF');
   }
@@ -111,7 +111,7 @@ const parseTokens = (tokens: string[]): LispExpr => {
   }
 
   if (token === '(') {
-    const elements: LispExpr[] = [];
+    const elements: FilthExpr[] = [];
     while (tokens[0] !== ')') {
       if (tokens.length === 0) {
         throw new ParseError('Missing closing parenthesis');
@@ -150,8 +150,8 @@ export const parseAtom = (token: string): number | string | boolean => {
   return Number.isNaN(num) ? token : num;
 };
 
-export const parseLambdaParams = (params: LispExpr): string[] => {
-  if (!isList(params)) {
+export const parseLambdaParams = (params: FilthExpr): string[] => {
+  if (!isFilthList(params)) {
     throw new ParseError('Lambda parameters must be a list');
   }
 

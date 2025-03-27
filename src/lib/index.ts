@@ -5,33 +5,33 @@ import { type Environment } from './environment';
 import { EvaluationError, LambdaError } from './error';
 import {
   checkRestParams,
-  getLispType,
-  isLispBasicValue,
-  isLispFunction,
-  isList,
+  getFilthType,
+  isFilthBasicValue,
+  isFilthFunction,
+  isFilthList,
   isString,
   isTruthy
 } from './helpers';
 import { parseLambdaParams } from './parse';
-import { LispExpr, LispFunction, LispList } from './types';
+import { FilthExpr, FilthFunction, FilthList } from './types';
 
 const log = createLog('filth');
 
 /**
- * Evaluate a Lisp expression
- * @param expr - The Lisp expression to evaluate
+ * Evaluate a Filth expression
+ * @param expr - The Filth expression to evaluate
  * @param env - The environment to evaluate the expression in
- * @returns The evaluated Lisp expression
+ * @returns The evaluated Filth expression
  */
 export const evaluate = async (
   env: Environment,
-  expr: LispExpr
-): Promise<LispExpr> => {
+  expr: FilthExpr
+): Promise<FilthExpr> => {
   if (expr === undefined || expr === null) {
     throw new EvaluationError('Cannot evaluate undefined or null expression');
   }
 
-  if (isLispBasicValue(expr)) {
+  if (isFilthBasicValue(expr)) {
     // a number, boolean, or null
     return expr;
   }
@@ -62,7 +62,7 @@ export const evaluate = async (
     if (expr.type === 'list') {
       // Handle multiple top-level expressions by treating them as a begin expression
       if (expr.elements.length > 0 && !isString(expr.elements[0])) {
-        let result: LispExpr | null = null;
+        let result: FilthExpr | null = null;
         for (const e of expr.elements) {
           result = await evaluate(env, e);
         }
@@ -77,10 +77,10 @@ export const evaluate = async (
             // Handle both forms of define
             const [nameOrList, ...body] = args;
 
-            if (!isList(nameOrList)) {
+            if (!isFilthList(nameOrList)) {
               if (!isString(nameOrList)) {
                 throw new EvaluationError(
-                  `First argument to define must be a symbol, received ${getLispType(nameOrList)}`
+                  `First argument to define must be a symbol, received ${getFilthType(nameOrList)}`
                 );
               }
               if (body.length !== 1) {
@@ -99,7 +99,7 @@ export const evaluate = async (
 
             if (!isString(fnName)) {
               throw new EvaluationError(
-                `Function name must be a symbol, received ${getLispType(fnName)}`
+                `Function name must be a symbol, received ${getFilthType(fnName)}`
               );
             }
 
@@ -112,7 +112,7 @@ export const evaluate = async (
             // log.debug('[define] body', body);
 
             // Create lambda expression
-            const lambda: LispFunction = {
+            const lambda: FilthFunction = {
               body:
                 body.length === 1
                   ? body[0]
@@ -148,9 +148,9 @@ export const evaluate = async (
                 .map(async arg => await evaluate(env, arg))
             );
 
-            if (!isList(lastArg)) {
+            if (!isFilthList(lastArg)) {
               throw new EvaluationError(
-                `last argument to apply must be a list, received ${getLispType(lastArg)}`
+                `last argument to apply must be a list, received ${getFilthType(lastArg)}`
               );
             }
 
@@ -158,7 +158,7 @@ export const evaluate = async (
 
             if (typeof fn === 'function') {
               return fn(...allArgs);
-            } else if (isLispFunction(fn)) {
+            } else if (isFilthFunction(fn)) {
               const newEnv = fn.env.create();
 
               // bind parameters
@@ -178,7 +178,7 @@ export const evaluate = async (
               return evaluate(newEnv, fn.body);
             } else {
               throw new EvaluationError(
-                `First argument to apply must be a function, not ${getLispType(fn)} (${JSON.stringify(fn)})`
+                `First argument to apply must be a function, not ${getFilthType(fn)} (${JSON.stringify(fn)})`
               );
             }
           }
@@ -197,7 +197,7 @@ export const evaluate = async (
             return {
               elements: [
                 evaluatedCar,
-                ...(isList(evaluatedCdr)
+                ...(isFilthList(evaluatedCdr)
                   ? evaluatedCdr.elements
                   : [evaluatedCdr])
               ],
@@ -206,7 +206,7 @@ export const evaluate = async (
 
           case 'car':
             const list = await evaluate(env, args[0]);
-            if (!isList(list) || list.elements.length === 0) {
+            if (!isFilthList(list) || list.elements.length === 0) {
               throw new EvaluationError(
                 'car: argument must be a non-empty list'
               );
@@ -215,7 +215,7 @@ export const evaluate = async (
 
           case 'cdr':
             const lst = await evaluate(env, args[0]);
-            if (!isList(lst) || lst.elements.length === 0) {
+            if (!isFilthList(lst) || lst.elements.length === 0) {
               throw new EvaluationError(
                 'cdr: argument must be a non-empty list'
               );
@@ -236,7 +236,7 @@ export const evaluate = async (
 
           case 'null?':
             const val = await evaluate(env, args[0]);
-            return isList(val) && val.elements.length === 0;
+            return isFilthList(val) && val.elements.length === 0;
 
           case 'lambda':
             if (args.length < 2) {
@@ -258,7 +258,7 @@ export const evaluate = async (
           // returning the value of the last expression. It's primarily used to group
           // multiple expressions together where only one expression is expected.
           case 'begin': {
-            let result: LispExpr | null = null;
+            let result: FilthExpr | null = null;
             // console.debug('[begin] expr', args);
             for (const expr of args) {
               result = await evaluate(env, expr);
@@ -269,12 +269,12 @@ export const evaluate = async (
           // let is a special form used to create local bindings. It introduces a new scope
           // where you can define variables that are only accessible within that scope
           case 'let': {
-            const bindings = args[0] as LispList;
+            const bindings = args[0] as FilthList;
             const body = args.slice(1);
             const newEnv = env.create();
 
             for (const binding of bindings.elements) {
-              if (!isList(binding)) {
+              if (!isFilthList(binding)) {
                 continue;
               }
               const [name, value] = binding.elements;
@@ -283,7 +283,7 @@ export const evaluate = async (
                 newEnv.define(name, evaluatedValue);
               }
             }
-            let result: LispExpr | null = null;
+            let result: FilthExpr | null = null;
             for (const expr of body) {
               result = await evaluate(newEnv, expr);
             }
@@ -317,7 +317,7 @@ export const evaluate = async (
                 args.map(async arg => await evaluate(env, arg))
               );
               return fn(...evaluatedArgs);
-            } else if (isLispFunction(fn)) {
+            } else if (isFilthFunction(fn)) {
               // log.debug('[evaluate] lambda function', operator);
               // Handle lambda function application
               const newEnv = fn.env.create();
@@ -349,12 +349,12 @@ export const evaluate = async (
         // If the operator is not a string, evaluate it and apply it
         const fn = await evaluate(env, operator);
 
-        if (isLispBasicValue(fn)) {
+        if (isFilthBasicValue(fn)) {
           return fn;
         }
 
         // log.debug('[operator] evaluating operator', operator, 'result', null);
-        if (isLispFunction(fn)) {
+        if (isFilthFunction(fn)) {
           // Handle lambda function application
           const newEnv = fn.env.create();
           const evaluatedArgs = await Promise.all(

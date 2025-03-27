@@ -1,9 +1,9 @@
 import { createLog } from '@helpers/log';
 import { Environment } from './environment';
-import { isList } from './helpers';
+import { isFilthList } from './helpers';
 import { evaluate } from './index';
 import { parse } from './parse';
-import { LispExpr } from './types';
+import { FilthExpr } from './types';
 
 const log = createLog('filth');
 
@@ -16,7 +16,7 @@ export class EvalEnvironment extends Environment {
     return new EvalEnvironment(this);
   }
 
-  async eval(expr: string): Promise<LispExpr> {
+  async eval(expr: string): Promise<FilthExpr> {
     const parsed = parse(expr);
     // log.debug('[eval] parsed', expr, parsed);
 
@@ -52,7 +52,7 @@ export const createEnv = (): EvalEnvironment => {
 const defineLogging = (env: EvalEnvironment) => {
   env.define(
     'log',
-    (...args: LispExpr[]) => {
+    (...args: FilthExpr[]) => {
       // eslint-disable-next-line no-console
       console.debug('[FILTH]', ...args);
       return null;
@@ -64,13 +64,13 @@ const defineLogging = (env: EvalEnvironment) => {
 const definePromises = (env: EvalEnvironment) => {
   env.define(
     'wait',
-    (ms: LispExpr) =>
-      new Promise<LispExpr>(resolve =>
+    (ms: FilthExpr) =>
+      new Promise<FilthExpr>(resolve =>
         setTimeout(() => resolve(null), ms as number)
       )
   );
 
-  // env.define('sequence', async (...args: LispExpr[]) => {
+  // env.define('sequence', async (...args: FilthExpr[]) => {
   //   for (const arg of args) {
   //     await env.eval(arg);
   //   }
@@ -78,10 +78,10 @@ const definePromises = (env: EvalEnvironment) => {
 };
 
 const defineArithmetic = (env: EvalEnvironment) => {
-  env.define('+', (...args: LispExpr[]) =>
+  env.define('+', (...args: FilthExpr[]) =>
     args.reduce((a, b) => (a as number) + (b as number), 0)
   );
-  env.define('-', (...args: LispExpr[]) => {
+  env.define('-', (...args: FilthExpr[]) => {
     if (args.length === 0) {
       return 0;
     }
@@ -90,10 +90,10 @@ const defineArithmetic = (env: EvalEnvironment) => {
     }
     return args.reduce((a, b) => (a as number) - (b as number));
   });
-  env.define('*', (...args: LispExpr[]) =>
+  env.define('*', (...args: FilthExpr[]) =>
     args.reduce((a, b) => (a as number) * (b as number), 1)
   );
-  env.define('/', (...args: LispExpr[]) => {
+  env.define('/', (...args: FilthExpr[]) => {
     if (args.length === 0) {
       return 1;
     }
@@ -105,9 +105,9 @@ const defineArithmetic = (env: EvalEnvironment) => {
 };
 
 const defineListPredicates = (env: EvalEnvironment) => {
-  env.define('list?', (x: LispExpr) => isList(x));
+  env.define('list?', (x: FilthExpr) => isFilthList(x));
   env.define(
     'equal?',
-    (a: LispExpr, b: LispExpr) => JSON.stringify(a) === JSON.stringify(b)
+    (a: FilthExpr, b: FilthExpr) => JSON.stringify(a) === JSON.stringify(b)
   );
 };

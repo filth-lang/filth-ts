@@ -1,5 +1,5 @@
 import { EvaluationError, UndefinedSymbolError } from './error';
-import { LispExpr } from './types';
+import { FilthExpr } from './types';
 
 export type DefineOptions = {
   allowOverride?: boolean;
@@ -8,12 +8,12 @@ export type DefineOptions = {
 
 export type LookupResult = {
   options: DefineOptions;
-  value: LispExpr;
+  value: FilthExpr;
 };
 
 export type BindingValue = {
   options: DefineOptions;
-  value: LispExpr;
+  value: FilthExpr;
 };
 
 export class Environment {
@@ -24,7 +24,7 @@ export class Environment {
     this.parent = parent;
   }
 
-  define(name: string, value: LispExpr, options: DefineOptions = {}): void {
+  define(name: string, value: FilthExpr, options: DefineOptions = {}): void {
     const existing = this.bindings.get(name);
     if (existing && existing.options.allowOverride === false) {
       throw new EvaluationError(`Cannot override existing symbol: ${name}`);
