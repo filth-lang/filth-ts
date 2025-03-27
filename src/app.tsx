@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import './app.css';
+import { createLog } from '@helpers/log';
+import { createEnv } from '@lib/create';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
+import SJSON from 'superjson';
+
+const log = createLog('app');
 
 const inputHistoryAtom = atomWithStorage<string[]>('filth:input-history', []);
 
@@ -15,10 +20,42 @@ const addMessageAtom = atom(null, (get, set, message: Message) => {
   set(messagesAtom, [...get(messagesAtom), message]);
 });
 
+const clearMessagesAtom = atom(null, (get, set) => {
+  set(messagesAtom, []);
+});
+
 type Message = {
-  content: string;
+  content?: string;
   id: string;
+  json?: string;
   type: 'input' | 'output' | 'error';
+};
+
+const useFilthEnv = () => {
+  const env = useRef(createEnv());
+
+  const exec = useCallback(async (command: string): Promise<Message> => {
+    try {
+      const result = await env.current.eval(command);
+
+      log.debug('[exec] result', result);
+
+      return {
+        id: crypto.randomUUID(),
+        json: SJSON.stringify(result),
+        type: 'output'
+      };
+    } catch (error) {
+      log.error(error);
+      return {
+        content: error instanceof Error ? error.message : 'Unknown error',
+        id: crypto.randomUUID(),
+        type: 'error'
+      };
+    }
+  }, []);
+
+  return { env: env.current, exec };
 };
 
 export const App = () => {
@@ -28,9 +65,10 @@ export const App = () => {
   const addToHistory = useSetAtom(addToHistoryAtom);
   const messages = useAtomValue(messagesAtom);
   const addMessage = useSetAtom(addMessageAtom);
-
+  const clearMessages = useSetAtom(clearMessagesAtom);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { exec } = useFilthEnv();
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
@@ -39,6 +77,13 @@ export const App = () => {
     }
 
     const command = input.trim();
+
+    if (command === 'clear' || command === 'cls') {
+      clearMessages();
+      setInput('');
+      return;
+    }
+
     const userMessage: Message = {
       content: command,
       id: crypto.randomUUID(),
@@ -51,17 +96,10 @@ export const App = () => {
     setInput('');
     setIsLoading(true);
 
-    // TODO: Add actual API call here
-    // Simulating API response
-    setTimeout(() => {
-      const outputMessage: Message = {
-        content: 'ok: 42',
-        id: crypto.randomUUID(),
-        type: 'output'
-      };
-      addMessage(outputMessage);
-      setIsLoading(false);
-    }, 1000);
+    const result = await exec(command);
+
+    addMessage(result);
+    setIsLoading(false);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -100,7 +138,7 @@ export const App = () => {
         {messages.map(message => (
           <div class={`message ${message.type}`} key={message.id}>
             <span class="prompt">{message.type === 'input' ? '>' : ''}</span>
-            <span class="content">{message.content}</span>
+            <span class="content">{getMessageContent(message)}</span>
           </div>
         ))}
         {isLoading && (
@@ -129,4 +167,14 @@ export const App = () => {
       </div>
     </div>
   );
+};
+
+const getMessageContent = (message: Message): string => {
+  if (message.type === 'output') {
+    if (message.json) {
+      const json = SJSON.parse(message.json);
+      return JSON.stringify(json);
+    }
+  }
+  return message.content ?? '';
 };
