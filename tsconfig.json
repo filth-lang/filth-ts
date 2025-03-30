@@ -24,6 +24,9 @@
       ],
       "@hooks/*": [
         "./src/hooks/*"
+      ],
+      "@filth/*": [
+        "./src/lib/*"
       ]
     }
   }
