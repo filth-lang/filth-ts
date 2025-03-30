@@ -9,6 +9,17 @@ describe('Filth', () => {
       env = createEnv();
     });
 
+    it('should evaluate a list', async () => {
+      expect(await env.eval('(1 2 3)')).toEqual(3);
+    });
+
+    it('should return a quoted list', async () => {
+      expect(await env.eval("'(1 2 3)")).toEqual({
+        elements: [1, 2, 3],
+        type: 'list'
+      });
+    });
+
     it('should throw error with undefined symbol', async () => {
       expect(async () => {
         await env.eval("'(1 2 last-number)");
@@ -27,8 +38,8 @@ describe('Filth', () => {
       });
     });
 
-    it.only('should return list length', async () => {
-      expect(await env.eval(`(len '(1 2 3))`)).toBe(0);
+    it('should return list length', async () => {
+      expect(await env.eval(`(len '(1 2 3))`)).toBe(3);
       expect(await env.eval(`(len '())`)).toBe(0);
       expect(await env.eval(`(len (1 2 3))`)).toBe(0);
       expect(await env.eval('(len ())')).toBe(0);
