@@ -10,7 +10,16 @@ describe('Filth', () => {
     });
 
     it('should handle range', async () => {
-      expect(true).toBe(true);
+      expect(
+        await env.eval(`
+      
+      (def fun (=> (x) (log x)))
+
+
+      ; (log "-----")
+      ; (0..5 fun)
+        `)
+      ).toEqual(null);
     });
   });
 });

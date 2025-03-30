@@ -11,7 +11,7 @@ describe('Filth', () => {
 
     it('should scope variables', async () => {
       const result = await env.eval(`
-        (define fn (lambda () (x)))
+        (def fn (lambda () (x)))
         (let ((x 1)) (fn))
         `);
 
