@@ -6,8 +6,9 @@ import {
   FilthFunction,
   FilthList,
   FilthNil,
-  FilthValue,
-  QuotedExpr
+  FilthQuotedExpr,
+  FilthRange,
+  FilthValue
 } from './types';
 
 export const getFilthType = (expr: FilthExpr): string => {
@@ -42,11 +43,17 @@ export const isFilthFunction = (expr: FilthExpr): expr is FilthFunction =>
   'type' in expr &&
   expr.type === 'function';
 
-export const isQuotedExpr = (expr: FilthExpr): expr is QuotedExpr =>
+export const isFilthQuotedExpr = (expr: FilthExpr): expr is FilthQuotedExpr =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'quoted';
+
+export const isFilthRange = (expr: FilthExpr): expr is FilthRange =>
+  expr !== null &&
+  typeof expr === 'object' &&
+  'type' in expr &&
+  expr.type === 'range';
 
 export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';
@@ -66,7 +73,8 @@ export const isFilthExpr = (expr: FilthExpr): expr is FilthExpr =>
   isFilthList(expr) ||
   isFilthBuiltinFunction(expr) ||
   isFilthFunction(expr) ||
-  isQuotedExpr(expr);
+  isFilthQuotedExpr(expr) ||
+  isFilthRange(expr);
 
 export const isTruthy = (
   value: null | false | undefined | string | FilthExpr
@@ -125,6 +133,12 @@ export const listExprToString = (expr: FilthExpr): string => {
   }
   if (isFilthBuiltinFunction(expr)) {
     return `#<builtin ${expr.name}>`;
+  }
+  if (isFilthQuotedExpr(expr)) {
+    return `'${listExprToString(expr.expr)}`;
+  }
+  if (isFilthRange(expr)) {
+    return `${expr.elements.join('..')}${expr.step ? `//${expr.step}` : ''}`;
   }
   return JSON.stringify(expr);
 };

@@ -1,162 +1,142 @@
 import { createLog } from '@helpers/log';
 import { ParseError } from './error';
 import { isFilthList } from './helpers';
+import { parse as peggyParse } from './parser';
 import { FilthExpr } from './types';
 
 const log = createLog('filth/parse');
 
-// Enhanced parser with quote support
+// Wrapper around the Peggy parser that maintains the same interface
 export const parse = (input: string): FilthExpr => {
-  // First, protect spaces within quoted strings
-  const tokens: string[] = [];
-  let currentToken = '';
-  let inQuotes = false;
-  let inComment = false;
-
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i];
-
-    if (inQuotes) {
-      if (char === '\n') {
-        currentToken += ' ';
-        continue;
+  // try {
+  const result = peggyParse(input, {
+    tracer: {
+      program: 'Program',
+      trace: (...args: any[]) => {
+        log.debug('[trace]', ...args);
       }
-      currentToken += char;
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      }
-      continue;
     }
-
-    if (inComment) {
-      if (char === '\n') {
-        inComment = false;
-      }
-      continue;
-    }
-
-    if (char === ';') {
-      inComment = true;
-      continue;
-    }
-
-    if (char === '\n') {
-      if (currentToken) {
-        tokens.push(currentToken);
-        currentToken = '';
-      }
-      continue;
-    }
-
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      currentToken += char;
-    } else if (char === ' ') {
-      if (currentToken) {
-        tokens.push(currentToken);
-        currentToken = '';
-      }
-    } else if (char === '(') {
-      if (currentToken) {
-        tokens.push(currentToken);
-        currentToken = '';
-      }
-      tokens.push('(');
-    } else if (char === ')') {
-      if (currentToken) {
-        tokens.push(currentToken);
-        currentToken = '';
-      }
-      tokens.push(')');
-    } else {
-      currentToken += char;
-    }
-  }
-
-  if (currentToken) {
-    tokens.push(currentToken);
-  }
-
-  // Handle multiple top-level expressions
-  const expressions: FilthExpr[] = [];
-  while (tokens.length > 0) {
-    expressions.push(parseTokens(tokens));
-  }
-
-  // If there's only one expression, return it directly
-  if (expressions.length === 1) {
-    return expressions[0];
-  }
-
-  // log.debug('[parse] expressions', expressions);
-  // Otherwise, wrap all expressions in a list
-  return {
-    elements: expressions,
-    type: 'list'
-  };
-};
-
-const isWhitespace = (token: string): boolean => token.trim() === '';
-
-const parseTokens = (tokens: string[]): FilthExpr => {
-  if (tokens.length === 0) {
-    throw new ParseError('Unexpected EOF');
-  }
-
-  // log.debug('[parseTokens] tokens', tokens);
-
-  const token = tokens.shift()!;
-
-  if (isWhitespace(token)) {
-    return parseTokens(tokens);
-  }
-
-  if (token === "'") {
-    return {
-      type: 'quoted',
-      value: parseTokens(tokens)
-    };
-  }
-
-  if (token === '(') {
-    const elements: FilthExpr[] = [];
-    while (tokens[0] !== ')') {
-      if (tokens.length === 0) {
-        throw new ParseError('Missing closing parenthesis');
-      }
-      elements.push(parseTokens(tokens));
-    }
-    tokens.shift(); // Remove closing parenthesis
-    return { elements, type: 'list' };
-  }
-
-  if (token === ')') {
-    throw new ParseError('Unexpected )');
-  }
-
-  if (token === 'nil' || token === 'null') {
-    return null;
-  }
-
-  return parseAtom(token);
-};
-
-export const parseAtom = (token: string): number | string | boolean => {
-  // if (token.startsWith('"') && token.endsWith('"')) {
-  //   return token.slice(1, -1);
+  });
+  // log.debug('[parse] result', result);
+  return result;
+  // } catch (error: unknown) {
+  //   if (error instanceof Error) {
+  //     throw new ParseError(error.message);
+  //   }
+  //   throw new ParseError('Unknown parsing error');
   // }
-
-  if (token === 'true') {
-    return true;
-  }
-
-  if (token === 'false') {
-    return false;
-  }
-
-  const num = Number(token);
-  return Number.isNaN(num) ? token : num;
 };
+
+// const isWhitespace = (token: string): boolean => token.trim() === '';
+
+// const parseTokens = (tokens: string[]): FilthExpr => {
+//   if (tokens.length === 0) {
+//     throw new ParseError('Unexpected EOF');
+//   }
+
+//   // log.debug('[parseTokens] tokens', tokens);
+
+//   const token = tokens.shift()!;
+
+//   if (isWhitespace(token)) {
+//     return parseTokens(tokens);
+//   }
+
+//   if (token === "'") {
+//     return {
+//       expr: parseTokens(tokens),
+//       type: 'quoted'
+//     };
+//   }
+
+//   if (token === '(') {
+//     const elements: FilthExpr[] = [];
+//     while (tokens[0] !== ')') {
+//       if (tokens.length === 0) {
+//         throw new ParseError('Missing closing parenthesis');
+//       }
+//       elements.push(parseTokens(tokens));
+//     }
+//     tokens.shift(); // Remove closing parenthesis
+//     return { elements, type: 'list' };
+//   }
+
+//   if (token === ')') {
+//     throw new ParseError('Unexpected )');
+//   }
+
+//   if (token === 'nil' || token === 'null') {
+//     return null;
+//   }
+
+//   return parseAtom(token);
+// };
+
+// export const parseAtom = (
+//   token: string
+// ): number | string | boolean | FilthRange => {
+//   // Handle ranges
+//   if (token.includes('..')) {
+//     const parts = token.split('..');
+//     const elements: number[] = [];
+
+//     // Parse the first part
+//     const firstNum = Number(parts[0]);
+//     if (Number.isNaN(firstNum)) {
+//       throw new ParseError(`Invalid range start: ${parts[0]}`);
+//     }
+//     elements.push(firstNum);
+
+//     // Check if there's a step value (using //)
+//     const lastPart = parts.at(-1);
+//     if (lastPart && lastPart.includes('//')) {
+//       const [end, step] = lastPart.split('//');
+//       const endNum = Number(end);
+//       const stepNum = Number(step);
+
+//       if (Number.isNaN(endNum) || Number.isNaN(stepNum)) {
+//         throw new ParseError(`Invalid range end or step: ${lastPart}`);
+//       }
+
+//       elements.push(endNum);
+//       return {
+//         elements,
+//         step: stepNum,
+//         type: 'range'
+//       };
+//     }
+
+//     // Handle multiple step points
+//     for (let i = 1; i < parts.length; i++) {
+//       const num = Number(parts[i]);
+//       if (Number.isNaN(num)) {
+//         throw new ParseError(`Invalid range element: ${parts[i]}`);
+//       }
+//       elements.push(num);
+//     }
+
+//     return {
+//       elements,
+//       type: 'range'
+//     };
+//   }
+
+//   // Handle quoted strings
+//   if (token.startsWith('"') && token.endsWith('"')) {
+//     return token;
+//   }
+
+//   if (token === 'true') {
+//     return true;
+//   }
+
+//   if (token === 'false') {
+//     return false;
+//   }
+
+//   const num = Number(token);
+//   return Number.isNaN(num) ? token : num;
+// };
 
 export const parseLambdaParams = (params: FilthExpr): string[] => {
   if (!isFilthList(params)) {
