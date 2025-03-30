@@ -58,16 +58,16 @@ export const evaluate = async (
     if (expr.type === 'quoted') {
       // log.debug('[evaluate] quoted', expr.value);
       // throw new Error('stop');
-      if (isFilthList(expr.value)) {
+      if (isFilthList(expr.expr)) {
         const result = await Promise.all(
-          expr.value.elements.map(async e => await evaluate(env, e))
+          expr.expr.elements.map(async e => await evaluate(env, e))
         );
         return {
           elements: result,
           type: 'list'
         };
       }
-      return expr.value;
+      return expr.expr;
     }
 
     if (expr.type === 'list') {
@@ -329,13 +329,12 @@ export const evaluate = async (
 
             if (typeof fn === 'function') {
               // Handle built-in functions
-              // log.debug('[evaluate] built-in function', operator);
+              log.debug('[evaluate] built-in function', operator);
 
               if (options.skipEvaluateArgs) {
                 return fn(...args);
               }
 
-              // const evaluatedArgs = args;
               const evaluatedArgs = await Promise.all(
                 args.map(async arg => await evaluate(env, arg))
               );

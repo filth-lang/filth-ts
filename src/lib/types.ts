@@ -10,14 +10,30 @@ export type FilthList = {
   type: 'list';
 };
 
+export type FilthRange = {
+  elements: number[];
+  step?: number;
+  type: 'range';
+};
+
+export type FilthRegex = {
+  regex: RegExp;
+  type: 'regex';
+};
+
+export type FilthJSON = {
+  json: JSON;
+  type: 'json';
+};
+
 export type FilthNil = {
   type: 'nil';
 };
 
 // Quote type
-export type QuotedExpr = {
+export type FilthQuotedExpr = {
+  expr: FilthExpr;
   type: 'quoted';
-  value: FilthExpr;
 };
 
 // Function types
@@ -25,6 +41,7 @@ export type FilthBuiltinFunction = (
   ...args: FilthExpr[]
 ) => FilthExpr | Promise<FilthExpr>;
 
+// lambda
 export type FilthFunction = {
   body: FilthExpr;
   env: Environment;
@@ -38,6 +55,9 @@ export type FilthExpr =
   | FilthValue
   | FilthBuiltinFunction
   | FilthList
+  | FilthRange
+  | FilthRegex
+  | FilthJSON
   | FilthNil
-  | QuotedExpr
+  | FilthQuotedExpr
   | FilthFunction;

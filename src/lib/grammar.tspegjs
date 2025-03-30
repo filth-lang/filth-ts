@@ -1,0 +1,100 @@
+{
+  function makeList(elements){
+    return {
+      elements: elements.map(([e]) => e),
+      type: 'list'
+    }
+  }
+}
+
+
+// Main entry point
+Program
+  = _ expressions:(Expression _)* _ {
+    return expressions.length === 1 ? expressions[0][0] : makeList(expressions);
+  }
+
+// Expressions
+Expression
+  = List
+  / Quoted
+  / Range
+  / Atom
+
+// Lists
+List
+  = "(" _ elements:(Expression _)* _ ")" {
+    return makeList( elements );
+  }
+
+// Quoted expressions
+Quoted
+  = "'" expr:Expression {
+    return {
+      expr,
+      type: 'quoted'
+    }
+  }
+
+// Atoms
+Atom
+  = Boolean
+  / Number
+  / String
+  / Symbol
+
+// Ranges
+Range
+  = first:Number ".." rest:(Number (".." Number)* ("//" step:Number)?)? {
+    const elements = [first];
+    let stepValue: number | undefined;
+    
+    if (rest) {
+      const [second, more, step] = rest;
+      elements.push(second);
+      
+      if (more) {
+        for (const [_, num] of more) {
+          elements.push(num);
+        }
+      }
+      
+      if (step) {
+        stepValue = step[1];
+      }
+    }
+    
+    const result = { elements, type: 'range' };
+    if (stepValue !== undefined) {
+      result.step = stepValue;
+    }
+    return result;
+  }
+
+// Booleans
+Boolean
+  = "true" { return true }
+  / "false" { return false }
+  / "nil" { return null }
+
+// Numbers
+Number
+  = sign:[-+]? digits:[0-9]+ decimal:("." [0-9]+)? {
+    const numStr = (sign || "") + digits.join("") + (decimal ? "." + decimal[1].join("") : "");
+    return parseFloat(numStr);
+  }
+
+// Strings
+String
+  = '"' chars:([^"\n] / " " / "\n")* '"' { return '"' + chars.join("").replace(/\n/g, "") + '"' }
+
+// Symbols
+Symbol
+  = chars:[^() \n;]+ { return chars.join("") }
+
+// Comments
+Comment
+  = ";" chars:[^\n]* { return null }
+
+_ "whitespace"
+  = ([ \t\n\r] / Comment)*

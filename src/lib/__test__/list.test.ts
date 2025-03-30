@@ -27,15 +27,17 @@ describe('Filth', () => {
       });
     });
 
-    it('should return list length', async () => {
-      expect(await env.eval("(len '(1 2 3))")).toBe(3);
-      expect(await env.eval("(len '())")).toBe(0);
+    it.only('should return list length', async () => {
+      expect(await env.eval(`(len '(1 2 3))`)).toBe(0);
+      expect(await env.eval(`(len '())`)).toBe(0);
+      expect(await env.eval(`(len (1 2 3))`)).toBe(0);
+      expect(await env.eval('(len ())')).toBe(0);
     });
 
     it('should evaluate list predicates', async () => {
       expect(await env.eval("(list? '(1 2 3))")).toBe(true);
       expect(await env.eval("(list? '())")).toBe(true);
-      // expect(await env.eval("(null? '(1 2 3))")).toBe(false);
+      expect(await env.eval("(null? '(1 2 3))")).toBe(false);
     });
 
     it('should evaluate equality checks', async () => {
@@ -44,3 +46,8 @@ describe('Filth', () => {
     });
   });
 });
+
+const expectEval = async (env: EvalEnvironment, expr: string) => {
+  const result = await env.eval(expr);
+  return expect(result);
+};

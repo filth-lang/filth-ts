@@ -20,6 +20,8 @@
     "dev": "bunx --bun vite",
     "build": "bunx --bun vite build",
     "build:site": "bunx --bun vite build --config vite.site.config.ts",
+    "build:grammar": "bun scripts/generate_parser.ts",
+    "watch:grammar": "bun scripts/generate_parser.ts --watch",
     "lint:format": "prettier --cache --check .",
     "lint": "eslint --cache .",
     "preview": "bunx --bun vite preview",
@@ -33,6 +35,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "peggy": "^4.2.0",
+    "ts-pegjs": "^4.2.1",
     "@eslint/js": "^9.23.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@nkzw/eslint-config": "^2.1.0",
