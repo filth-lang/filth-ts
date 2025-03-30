@@ -120,6 +120,7 @@ const defineListPredicates = (env: EvalEnvironment) => {
   });
 
   env.define('len', (x: FilthExpr) => {
+    // log.debug('[len] x', x);
     if (isFilthList(x)) {
       return x.elements.length;
     }

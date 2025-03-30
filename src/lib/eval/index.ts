@@ -27,9 +27,9 @@ export const evaluate = async (
   env: Environment,
   expr: FilthExpr
 ): Promise<FilthExpr> => {
-  if (expr === undefined || expr === null) {
-    throw new EvaluationError('Cannot evaluate undefined or null expression');
-  }
+  // if (expr === undefined || expr === null) {
+  //   throw new EvaluationError('Cannot evaluate undefined or null expression');
+  // }
 
   if (isFilthBasicValue(expr)) {
     // a number, boolean, or null
@@ -81,6 +81,11 @@ export const evaluate = async (
       }
 
       const [operator, ...args] = expr.elements;
+      // log.debug('[evaluate] operator', operator, args);
+
+      if (!operator) {
+        return null;
+      }
 
       if (isString(operator)) {
         switch (operator) {
@@ -329,7 +334,7 @@ export const evaluate = async (
 
             if (typeof fn === 'function') {
               // Handle built-in functions
-              log.debug('[evaluate] built-in function', operator);
+              // log.debug('[evaluate] built-in function', operator);
 
               if (options.skipEvaluateArgs) {
                 return fn(...args);

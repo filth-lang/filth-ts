@@ -9,14 +9,7 @@ const log = createLog('filth/parse');
 // Wrapper around the Peggy parser that maintains the same interface
 export const parse = (input: string): FilthExpr => {
   // try {
-  const result = peggyParse(input, {
-    tracer: {
-      program: 'Program',
-      trace: (...args: any[]) => {
-        log.debug('[trace]', ...args);
-      }
-    }
-  });
+  const result = peggyParse(input, {});
   // log.debug('[parse] result', result);
   return result;
   // } catch (error: unknown) {

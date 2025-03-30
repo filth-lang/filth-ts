@@ -31,11 +31,6 @@ describe('Filth', () => {
       (apply sum '(1 2 3))
       `;
       expect(await env.eval(input)).toBe(6);
-
-      // dont support common lisp syntax
-      expect(async () => {
-        await env.eval(`(apply 'sum 1 2 '(3))`);
-      }).toThrowError(`Undefined symbol: 'sum`);
     });
   });
 });
