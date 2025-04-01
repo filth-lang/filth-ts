@@ -58,9 +58,9 @@ export const evaluate = async (
       return evalList(env, expr);
     }
 
-    // if (expr.type === 'range') {
-    //   return evalRange(env, expr);
-    // }
+    if (expr.type === 'range') {
+      return expr;
+    }
   }
 
   throw new EvaluationError(

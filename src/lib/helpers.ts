@@ -11,6 +11,11 @@ import {
   FilthValue
 } from './types';
 
+export const createFilthList = (elements: FilthExpr[]): FilthList => ({
+  elements,
+  type: 'list'
+});
+
 export const getFilthType = (expr: FilthExpr): string => {
   if (isFilthBasicValue(expr)) {
     return typeof expr;

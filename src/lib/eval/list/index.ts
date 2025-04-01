@@ -4,9 +4,12 @@ import { type Environment } from '@filth/environment';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import {
+  createFilthList,
   isFilthBasicValue,
+  isFilthBuiltinFunction,
   isFilthFunction,
   isFilthList,
+  isFilthRange,
   isString,
   isTruthy
 } from '@filth/helpers';
@@ -124,10 +127,7 @@ export const evalList = async (
 
       default:
         // log.debug('[evaluate] operator', operator);
-        // log.debug(
-        //   '[evaluate] bindings',
-        //   Array.from(env.getBindings().keys())
-        // );
+        // log.debug('[evaluate] bindings', Array.from(env.getBindings().keys()));
         // For non-special forms, evaluate the operator and apply it
         const { options, value: fn } = env.lookup(operator);
 
@@ -182,8 +182,6 @@ export const evalList = async (
         }
     }
   } else {
-    // log.debug('[evaluate] operator', operator);
-
     // If the operator is not a string, evaluate it and apply it
     const fn = await evaluate(env, operator);
 
@@ -194,6 +192,7 @@ export const evalList = async (
       }
       return result;
     }
+    // log.debug('[evaluate] operator', operator);
 
     // log.debug('[operator] evaluating operator', operator, 'result', null);
     if (isFilthFunction(fn)) {
@@ -207,20 +206,54 @@ export const evalList = async (
         newEnv.define(param, evaluatedArgs[i]);
       });
       return evaluate(newEnv, fn.body);
-    } else if (typeof fn === 'function') {
+    }
+
+    if (isFilthRange(fn)) {
+      const evaluatedArgs = await Promise.all(
+        args.map(async arg => await evaluate(env, arg))
+      );
+      log.debug('[eval] range', fn);
+      // log.debug('[eval] range args', evaluatedArgs);
+
+      if (!evaluatedArgs.length) {
+        throw new EvaluationError('range requires at least one argument');
+      }
+      const argFn = evaluatedArgs[0];
+
+      const newEnv = env.create();
+      const [start, end] = fn.elements;
+      const result: FilthExpr[] = [];
+
+      if (isFilthFunction(argFn)) {
+        log.debug('[eval] range argFn body', argFn.body);
+      }
+
+      for (let i = start; i <= end; i++) {
+        if (isFilthBuiltinFunction(argFn)) {
+          result.push(await argFn(i));
+        } else if (isFilthFunction(argFn)) {
+          const params = argFn.params;
+          newEnv.define(params[0], i);
+          result.push(await evaluate(newEnv, argFn.body));
+        }
+        // newEnv.define(i.toString(), i);
+      }
+      return createFilthList(result);
+    }
+
+    if (typeof fn === 'function') {
       // Handle built-in functions
       const evaluatedArgs = await Promise.all(
         args.map(async arg => await evaluate(env, arg))
       );
       return fn(...evaluatedArgs);
-    } else {
-      // log.debug(
-      //   '[apply] fn',
-      //   `Cannot apply ${JSON.stringify(fn)} as a function`
-      // );
-      throw new EvaluationError(
-        `Cannot apply ${JSON.stringify(fn)} as a function`
-      );
     }
+    // log.debug(
+    //   '[apply] fn',
+    //   `Cannot apply ${JSON.stringify(fn)} as a function`
+    // );
+    throw new EvaluationError(
+      `Cannot apply ${JSON.stringify(fn)} as a function`
+    );
   }
 };

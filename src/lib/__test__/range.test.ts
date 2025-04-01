@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { createEnv, EvalEnvironment } from '../create';
+import './setup';
 
 describe('Filth', () => {
   describe('Ranges', () => {
@@ -13,13 +14,11 @@ describe('Filth', () => {
       expect(
         await env.eval(`
       
-      (def fun (=> (x) (log x)))
+      (def fun (=> (x) (* x 2)))
 
-
-      ; (log "-----")
-      ; (0..5 fun)
+      (0..5 fun)
         `)
-      ).toEqual(null);
+      ).toEqualFilthList([0, 2, 4, 6, 8, 10]);
     });
   });
 });
