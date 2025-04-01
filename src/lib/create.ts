@@ -57,7 +57,7 @@ const defineLogging = (env: EvalEnvironment) => {
       console.debug('[FILTH]', ...args);
       return null;
     },
-    { skipEvaluateArgs: true }
+    { skipEvaluateArgs: false }
   );
 };
 
