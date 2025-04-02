@@ -17,6 +17,7 @@ export type FilthRange = {
 };
 
 export type FilthRegex = {
+  hasNamedGroups?: boolean;
   regex: RegExp;
   type: 'regex';
 };

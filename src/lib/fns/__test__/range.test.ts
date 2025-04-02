@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, test } from 'bun:test';
-import { createEnv, EvalEnvironment } from '../create';
-import './setup';
-import { createFilthRange } from '../fns/range';
+import { createEnv, EvalEnvironment } from '../../create';
+import '../../__test__/setup';
+import { createFilthRange } from '../range';
 
 describe('Filth', () => {
   describe('Ranges', () => {

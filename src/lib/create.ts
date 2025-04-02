@@ -1,6 +1,6 @@
 import { createLog } from '@helpers/log';
 import { Environment } from './environment';
-import { isFilthList, isFilthNil, isString } from './helpers';
+import { isFilthList, isFilthNil, isFilthString } from './helpers';
 import { evaluate } from './index';
 import { parse } from './parse';
 import { FilthExpr } from './types';
@@ -124,7 +124,7 @@ const defineListPredicates = (env: EvalEnvironment) => {
     if (isFilthList(x)) {
       return x.elements.length;
     }
-    if (isString(x)) {
+    if (isFilthString(x)) {
       return x.length;
     }
     return 0;

@@ -5,7 +5,7 @@ import { exprToJson } from './helpers';
 
 describe('Filth', () => {
   describe('Parser', () => {
-    describe.skip('Atoms', () => {
+    describe('Atoms', () => {
       test.each([
         ['123', 123],
         ['-10', -10],
@@ -22,7 +22,7 @@ describe('Filth', () => {
       });
     });
 
-    describe.skip('Lists', () => {
+    describe('Lists', () => {
       test.each([
         ['(1 2 3)', [1, 2, 3]],
 
@@ -44,7 +44,7 @@ describe('Filth', () => {
       });
     });
 
-    describe.skip('Quoted', () => {
+    describe('Quoted', () => {
       it('should parse quoted expressions', () => {
         expect(parse("'(1 2 3)")).toEqual({
           expr: {
@@ -56,7 +56,7 @@ describe('Filth', () => {
       });
     });
 
-    describe.skip('Comments', () => {
+    describe('Comments', () => {
       it('should handle comments', () => {
         const input = `
       ; This is a comment
@@ -70,7 +70,7 @@ describe('Filth', () => {
       });
     });
 
-    describe.skip('Ranges', () => {
+    describe('Ranges', () => {
       test.each([
         ['1..10', { elements: [1, 10], type: 'range' }],
         ['1..10..5', { elements: [1, 10, 5], type: 'range' }],
@@ -86,8 +86,12 @@ describe('Filth', () => {
 
     describe('Regex', () => {
       test.each([
-        ['/hello/', { regex: /hello/, type: 'regex' }]
-        // ['/hello/i', { regex: /hello/i, type: 'regex' }]
+        ['/hello/', { regex: /hello/, type: 'regex' }],
+        ['/hello/i', { regex: /hello/i, type: 'regex' }],
+        [
+          '/door:(?<state>open|closed|locked)/',
+          { regex: /door:(?<state>open|closed|locked)/, type: 'regex' }
+        ]
       ])('should handle regex %s', (input, expected) => {
         expect(parse(input)).toEqual(expected as FilthRegex);
       });

@@ -1,6 +1,6 @@
 import { Environment } from '@filth/environment';
 import { evaluate } from '@filth/eval/evaluate';
-import { isFilthList, isString } from '@filth/helpers';
+import { isFilthList, isFilthString } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -19,7 +19,7 @@ export const evalLet = async (env: Environment, args: FilthExpr[]) => {
       continue;
     }
     const [name, value] = binding.elements;
-    if (isString(name)) {
+    if (isFilthString(name)) {
       const evaluatedValue = await evaluate(newEnv, value);
       newEnv.define(name, evaluatedValue);
     }

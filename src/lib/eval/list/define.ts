@@ -5,7 +5,7 @@ import {
   checkRestParams,
   getFilthType,
   isFilthList,
-  isString
+  isFilthString
 } from '@filth/helpers';
 import { FilthExpr, FilthFunction } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -20,7 +20,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
   // log.debug('[define] body', body);
 
   if (!isFilthList(nameOrList)) {
-    if (!isString(nameOrList)) {
+    if (!isFilthString(nameOrList)) {
       throw new EvaluationError(
         `First argument to define must be a symbol, received ${getFilthType(nameOrList)}`
       );
@@ -39,7 +39,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
   const fnName = nameOrList.elements[0];
   const params = nameOrList.elements.slice(1);
 
-  if (!isString(fnName)) {
+  if (!isFilthString(fnName)) {
     throw new EvaluationError(
       `Function name must be a symbol, received ${getFilthType(fnName)}`
     );
