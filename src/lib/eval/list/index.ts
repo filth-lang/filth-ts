@@ -3,12 +3,14 @@
 import { type Environment } from '@filth/environment';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
+import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
 import {
   createFilthList,
   isFilthBasicValue,
   isFilthBuiltinFunction,
   isFilthFunction,
   isFilthList,
+  isFilthNumber,
   isFilthRange,
   isString,
   isTruthy
@@ -107,6 +109,40 @@ export const evalList = async (
       case '=>':
       case 'lambda':
         return evalLambda(env, args);
+
+      case '=': {
+        const [a, b] = args;
+        const evaluatedA = await evaluate(env, a);
+        const evaluatedB = await evaluate(env, b);
+
+        if (isFilthRange(evaluatedA)) {
+          return isFilthRangeIn(evaluatedA, evaluatedB);
+        }
+
+        return evaluatedA === evaluatedB;
+      }
+
+      case '..': {
+        const [start, end, step] = args;
+        const evaluatedStart = await evaluate(env, start);
+        const evaluatedEnd = await evaluate(env, end);
+        const evaluatedStep =
+          step !== undefined ? await evaluate(env, step) : 1;
+
+        if (!isFilthNumber(evaluatedStart) || !isFilthNumber(evaluatedEnd)) {
+          throw new EvaluationError('range requires numeric arguments');
+        }
+
+        // log.debug('[eval] range', evaluatedStart, evaluatedEnd);
+        return createFilthRange(
+          evaluatedStart as number,
+          evaluatedEnd as number,
+          evaluatedStep as number
+        );
+
+        // return createFilthList(Array.from({ length: evaluatedEnd - evaluatedStart + 1 }, (_, i) => evaluatedStart + i));
+        // throw new EvaluationError('range not implemented');
+      }
 
       // begin is a special form used to execute a sequence of expressions in order,
       // returning the value of the last expression. It's primarily used to group

@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 
-import { isFilthList } from '@lib/helpers';
-import { FilthExpr, FilthList } from '@lib/types';
+import { createLog } from '@helpers/log';
+import { isFilthList, isFilthRange } from '@lib/helpers';
+import { FilthExpr, FilthList, FilthRange } from '@lib/types';
 import { expect } from 'bun:test';
 
+const log = createLog('test');
 declare module 'bun:test' {
   interface Matchers<T> {
     toEqualFilthList(expected: FilthExpr[]): T;
+    toEqualFilthRange(expected: FilthRange): T;
   }
 }
 
@@ -30,6 +33,31 @@ const toEqualFilthList = (actual: unknown, expected: FilthExpr[]) => {
   };
 };
 
+const toEqualFilthRange = (actual: unknown, expected: FilthRange) => {
+  if (!isFilthRange(actual as FilthExpr)) {
+    return {
+      message: () => `expected ${actual} to be a Filth range`,
+      pass: false
+    };
+  }
+
+  // log.debug('[assertEqualFilthRange]', actual, expected);
+
+  const filthRange = actual as FilthRange;
+  const pass =
+    filthRange.elements.length === expected.elements.length &&
+    filthRange.elements.every(
+      (element, index) => element === expected.elements[index]
+    );
+
+  return {
+    message: () =>
+      `expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`,
+    pass
+  };
+};
+
 expect.extend({
-  toEqualFilthList
+  toEqualFilthList,
+  toEqualFilthRange
 });
