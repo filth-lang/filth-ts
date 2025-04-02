@@ -1,7 +1,9 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
+import { beforeEach, describe, expect, it, test } from 'bun:test';
 import { createEnv, EvalEnvironment } from '../../create';
 import '../../__test__/setup';
+import { createFilthList } from '../../helpers';
 import { FilthExpr } from '../../types';
+import { createFilthJSON } from '../json';
 
 describe('Filth', () => {
   describe('JSON', () => {
@@ -16,8 +18,27 @@ describe('Filth', () => {
       });
     });
 
+    test.each([
+      [`"filth"`, 'filth'],
+
+      // TODO should eval to a list
+      [`{"lang": "filth"} "lang"`, createFilthList(['filth'])],
+
+      // TODO should eval to a list
+      [
+        `{"lang": "filth"} {"isFilthy": true}`,
+        createFilthJSON({ isFilthy: true, lang: 'filth' })
+      ]
+    ])('json %p should evalute to %p', async (expr, expected) => {
+      expect(await env.eval(expr)).toEqual(expected);
+    });
+
     it.skip('should perform json operations', async () => {
       await env.eval(`
+
+
+        (get {"lang": "filth"} "lang")
+        ; "filth"
         
         dehydrate { "state": "open" }
         ; ( "/state" "open" )

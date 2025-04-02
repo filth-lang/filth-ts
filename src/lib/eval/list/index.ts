@@ -9,6 +9,7 @@ import {
   isFilthBasicValue,
   isFilthBuiltinFunction,
   isFilthFunction,
+  isFilthJSON,
   isFilthList,
   isFilthNumber,
   isFilthRange,
@@ -21,6 +22,7 @@ import { createLog } from '@helpers/log';
 import { doesFilthRegexMatch } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
+import { evalJSON } from './json';
 import { evalLambda } from './lambda';
 import { evalLet } from './let';
 import { evalRegex } from './regex';
@@ -267,9 +269,9 @@ export const evalList = async (
       const [start, end] = fn.elements;
       const result: FilthExpr[] = [];
 
-      if (isFilthFunction(argFn)) {
-        log.debug('[eval] range argFn body', argFn.body);
-      }
+      // if (isFilthFunction(argFn)) {
+      //   log.debug('[eval] range argFn body', argFn.body);
+      // }
 
       for (let i = start; i <= end; i++) {
         if (isFilthBuiltinFunction(argFn)) {
@@ -288,6 +290,10 @@ export const evalList = async (
       return evalRegex(env, fn, args);
     }
 
+    if (isFilthJSON(fn)) {
+      return evalJSON(env, fn, args);
+    }
+
     if (typeof fn === 'function') {
       // Handle built-in functions
       const evaluatedArgs = await Promise.all(
@@ -295,6 +301,7 @@ export const evalList = async (
       );
       return fn(...evaluatedArgs);
     }
+
     // log.debug(
     //   '[apply] fn',
     //   `Cannot apply ${JSON.stringify(fn)} as a function`

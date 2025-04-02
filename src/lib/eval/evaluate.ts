@@ -58,7 +58,11 @@ export const evaluate = async (
       return evalList(env, expr);
     }
 
-    if (expr.type === 'range' || expr.type === 'regex') {
+    if (
+      expr.type === 'range' ||
+      expr.type === 'regex' ||
+      expr.type === 'json'
+    ) {
       return expr;
     }
   }

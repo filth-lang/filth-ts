@@ -5,6 +5,8 @@ import {
   FilthExpr,
   FilthFunction,
   FilthJSON,
+  FilthJSONArray,
+  FilthJSONObject,
   FilthList,
   FilthNil,
   FilthQuotedExpr,
@@ -74,6 +76,12 @@ export const isFilthJSON = (expr: FilthExpr): expr is FilthJSON =>
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'json';
+
+export const isFilthJSONObject = (expr: unknown): expr is FilthJSONObject =>
+  expr !== null && typeof expr === 'object';
+
+export const isFilthJSONArray = (expr: unknown): expr is FilthJSONArray =>
+  expr !== null && typeof expr === 'object' && Array.isArray(expr);
 
 export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';

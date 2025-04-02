@@ -1492,7 +1492,7 @@ peg$parseBoolean() {
   function // @ts-ignore
 peg$parseNumber() {
 // @ts-ignore
-    var s0, s1, s2, s3, s4;
+    var s0, s1, s2, s3, s4, s5;
 
 // @ts-ignore
     s0 = peg$currPos;
@@ -1504,22 +1504,29 @@ peg$parseNumber() {
       s1 = null;
     }
 // @ts-ignore
-    s2 = peg$parseint();
+    s2 = peg$parseplus();
 // @ts-ignore
-    if (s2 !== peg$FAILED) {
+    if (s2 === peg$FAILED) {
 // @ts-ignore
-      s3 = peg$parsefrac();
+      s2 = null;
+    }
 // @ts-ignore
-      if (s3 === peg$FAILED) {
+    s3 = peg$parseint();
 // @ts-ignore
-        s3 = null;
-      }
+    if (s3 !== peg$FAILED) {
 // @ts-ignore
-      s4 = peg$parseexp();
+      s4 = peg$parsefrac();
 // @ts-ignore
       if (s4 === peg$FAILED) {
 // @ts-ignore
         s4 = null;
+      }
+// @ts-ignore
+      s5 = peg$parseexp();
+// @ts-ignore
+      if (s5 === peg$FAILED) {
+// @ts-ignore
+        s5 = null;
       }
 // @ts-ignore
       peg$savedPos = s0;

@@ -22,16 +22,13 @@ export type FilthRegex = {
   type: 'regex';
 };
 
-export type JSONValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JSONValue[]
-  | { [key: string]: JSONValue };
+export type FilthJSONObject = { [key: string]: FilthJSONValue };
+export type FilthJSONArray = FilthJSONValue[];
+
+export type FilthJSONValue = FilthJSONObject | FilthJSONArray | FilthValue;
 
 export type FilthJSON = {
-  json: JSONValue;
+  json: FilthJSONObject | FilthJSONArray;
   type: 'json';
 };
 

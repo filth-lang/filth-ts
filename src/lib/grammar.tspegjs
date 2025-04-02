@@ -101,7 +101,7 @@ Boolean
 
 // Numbers
 Number
-  = minus? int frac? exp? { return parseFloat(text()); }
+  = minus? plus? int frac? exp? { return parseFloat(text()); }
 
 decimal_point
   = "."
