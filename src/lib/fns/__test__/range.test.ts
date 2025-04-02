@@ -62,12 +62,11 @@ describe('Filth', () => {
     it('should handle range', async () => {
       expect(
         await env.eval(`
-
-      (def fun (=> (x) (* x 2)))
-
-      (0..5 fun)
+        
+          (0..5 (=> (x) (+ x 10)))
+        
         `)
-      ).toEqualFilthList([0, 2, 4, 6, 8, 10]);
+      ).toEqualFilthList([10, 11, 12, 13, 14, 15]);
     });
   });
 });

@@ -3,7 +3,7 @@ import { type Environment } from '../environment';
 import { EvaluationError } from '../error';
 import { isFilthBasicValue, isFilthList, isFilthString } from '../helpers';
 import { FilthExpr } from '../types';
-import { evalList } from './list';
+import { evalList } from './list/index';
 
 const log = createLog('filth/eval');
 

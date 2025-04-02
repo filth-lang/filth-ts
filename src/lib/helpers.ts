@@ -4,6 +4,7 @@ import {
   FilthBuiltinFunction,
   FilthExpr,
   FilthFunction,
+  FilthJSON,
   FilthList,
   FilthNil,
   FilthQuotedExpr,
@@ -67,6 +68,12 @@ export const isFilthRegex = (expr: FilthExpr): expr is FilthRegex =>
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'regex';
+
+export const isFilthJSON = (expr: FilthExpr): expr is FilthJSON =>
+  expr !== null &&
+  typeof expr === 'object' &&
+  'type' in expr &&
+  expr.type === 'json';
 
 export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';
@@ -156,5 +163,9 @@ export const listExprToString = (expr: FilthExpr): string => {
   if (isFilthRange(expr)) {
     return `${expr.elements.join('..')}${expr.step ? `//${expr.step}` : ''}`;
   }
+  if (isFilthJSON(expr)) {
+    return JSON.stringify(expr.json);
+  }
+
   return JSON.stringify(expr);
 };

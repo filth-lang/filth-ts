@@ -15,6 +15,13 @@
       type: 'regex'
     }
   }
+
+  function makeJSON(value){
+    return {
+      json: value,
+      type: 'json'
+    }
+  }
 }
 
 
@@ -24,12 +31,16 @@ Program
     return expressions.length === 1 ? expressions[0][0] : makeList(expressions);
   }
 
+_ "whitespace"
+  = ([ \t\n\r] / Comment)*
+
 // Expressions
 Expression
   = List
   / Quoted
   / Range
   / Regex
+  / JSON
   / Atom
 
 // Lists
@@ -90,10 +101,36 @@ Boolean
 
 // Numbers
 Number
-  = sign:[-+]? digits:[0-9]+ decimal:("." [0-9]+)? {
-    const numStr = (sign || "") + digits.join("") + (decimal ? "." + decimal[1].join("") : "");
-    return parseFloat(numStr);
-  }
+  = minus? int frac? exp? { return parseFloat(text()); }
+
+decimal_point
+  = "."
+
+digit1_9
+  = [1-9]
+
+e
+  = [eE]
+
+exp
+  = e (minus / plus)? DIGIT+
+
+frac
+  = decimal_point DIGIT+
+
+int
+  = zero / (digit1_9 DIGIT*)
+
+minus
+  = "-"
+
+plus
+  = "+"
+
+zero
+  = "0"
+
+
 
 // Strings
 String
@@ -115,5 +152,111 @@ Regex
     return makeRegex(regexStr, flagStr);
   }
 
-_ "whitespace"
-  = ([ \t\n\r] / Comment)*
+// JSON
+JSON
+  = JSONObject
+  / JSONArray
+
+JSONObject
+  = "{" _ pairs:(JSONPair _ "," _)* pair:JSONPair? _ "}" {
+    const obj = {};
+    if (pairs) {
+      for (const [pair] of pairs) {
+        Object.assign(obj, pair);
+      }
+    }
+    if (pair) {
+      Object.assign(obj, pair);
+    }
+    return makeJSON(obj);
+  }
+
+JSONPair
+  = key:(JSONString / JSONKey) _ ":" _ value:JSONValue {
+    return { [key]: value };
+  }
+
+JSONKey
+  = first:[a-zA-Z_] rest:[a-zA-Z0-9_]* { return first + rest.join("") }
+
+
+ws "json_whitespace" = [ \t\n\r]*
+begin_array     = ws "[" ws
+end_array       = ws "]" ws
+value_separator = ws "," ws
+
+JSONArray
+  = value:NestedJSONArray
+    { return makeJSON(value); }
+
+JSONValue
+  = JSONString
+  / Number
+  / NestedJSONObject
+  / NestedJSONArray
+  / "true" { return true }
+  / "false" { return false }
+  / "null" { return null }
+  
+
+NestedJSONObject
+  = "{" _ pairs:(JSONPair _ "," _)* pair:JSONPair? _ "}" {
+    const obj = {};
+    if (pairs) {
+      for (const [pair] of pairs) {
+        Object.assign(obj, pair);
+      }
+    }
+    if (pair) {
+      Object.assign(obj, pair);
+    }
+    return obj;
+  }
+
+NestedJSONArray
+  = begin_array
+    values:(
+      head:JSONValue
+      tail:(value_separator v:JSONValue { return v; })*
+      { return [head].concat(tail); }
+    )?
+    end_array
+    { return values !== null ? values : []; }
+
+JSONString
+  = quotation_mark chars:JSONChar* quotation_mark { return chars.join(""); }
+
+JSONChar
+  = unescaped
+  / escape
+    sequence:(
+        '"'
+      / "\\"
+      / "/"
+      / "b" { return "\b"; }
+      / "f" { return "\f"; }
+      / "n" { return "\n"; }
+      / "r" { return "\r"; }
+      / "t" { return "\t"; }
+      / "u" digits:$(HEXDIG HEXDIG HEXDIG HEXDIG) {
+          return String.fromCharCode(parseInt(digits, 16));
+        }
+    )
+    { return sequence; }
+
+escape
+  = "\\"
+
+quotation_mark
+  = '"'
+
+unescaped
+  = [^\0-\x1F\x22\x5C]
+
+// ----- Core ABNF Rules -----
+
+// See RFC 4234, Appendix B (http://tools.ietf.org/html/rfc4234).
+DIGIT  = [0-9]
+HEXDIG = [0-9a-f]i
+
+

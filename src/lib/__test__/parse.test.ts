@@ -1,6 +1,6 @@
 import { describe, expect, it, test } from 'bun:test';
 import { parse } from '../parse';
-import { FilthRange, FilthRegex } from '../types';
+import { FilthJSON, FilthRange, FilthRegex } from '../types';
 import { exprToJson } from './helpers';
 
 describe('Filth', () => {
@@ -86,14 +86,49 @@ describe('Filth', () => {
 
     describe('Regex', () => {
       test.each([
-        ['/hello/', { regex: /hello/, type: 'regex' }],
-        ['/hello/i', { regex: /hello/i, type: 'regex' }],
+        ['/hello/', { hasNamedGroups: false, regex: /hello/, type: 'regex' }],
+        ['/hello/i', { hasNamedGroups: false, regex: /hello/i, type: 'regex' }],
         [
           '/door:(?<state>open|closed|locked)/',
-          { regex: /door:(?<state>open|closed|locked)/, type: 'regex' }
+          {
+            hasNamedGroups: true,
+            regex: /door:(?<state>open|closed|locked)/,
+            type: 'regex'
+          }
         ]
       ])('should handle regex %s', (input, expected) => {
         expect(parse(input)).toEqual(expected as FilthRegex);
+      });
+    });
+
+    describe('JSON', () => {
+      test.each([
+        [`{}`, { json: {}, type: 'json' }],
+        [`[]`, { json: [], type: 'json' }],
+        [`[null, null, null]`, { json: [null, null, null], type: 'json' }],
+        [
+          `[ 1, 2, "three", null, true, true, false ]`,
+          { json: [1, 2, 'three', null, true, true, false], type: 'json' }
+        ],
+        [`[ "hello", "world" ]`, { json: ['hello', 'world'], type: 'json' }],
+        [
+          `[ "one", "two", 3, 4 ]`,
+          { json: ['one', 'two', 3, 4], type: 'json' }
+        ],
+        [
+          `{ values: [ { "state": "open" }, { "state": "closed" } ] }`,
+          {
+            json: { values: [{ state: 'open' }, { state: 'closed' }] },
+            type: 'json'
+          }
+        ],
+        [
+          '{"name": "John", "age": 30}',
+          { json: { age: 30, name: 'John' }, type: 'json' }
+        ]
+      ])('should handle JSON %s', (input, expected) => {
+        const result = parse(input);
+        expect(result).toEqual(expected as unknown as FilthJSON);
       });
     });
   });
