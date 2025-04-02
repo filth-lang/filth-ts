@@ -1,7 +1,7 @@
 import { createLog } from '@helpers/log';
 import { type Environment } from '../environment';
 import { EvaluationError } from '../error';
-import { isFilthBasicValue, isFilthList, isString } from '../helpers';
+import { isFilthBasicValue, isFilthList, isFilthString } from '../helpers';
 import { FilthExpr } from '../types';
 import { evalList } from './list';
 
@@ -22,7 +22,7 @@ export const evaluate = async (
     return expr;
   }
 
-  if (isString(expr)) {
+  if (isFilthString(expr)) {
     // If the string is already a string value (not a symbol), return it as is
     if (expr.startsWith('"') && expr.endsWith('"')) {
       return expr.slice(1, -1);
@@ -30,7 +30,7 @@ export const evaluate = async (
     // Otherwise, it's a symbol that needs to be looked up
     const { value } = env.lookup(expr);
 
-    if (isString(value)) {
+    if (isFilthString(value)) {
       // If the value is another symbol, look it up recursively
       return evaluate(env, value);
     }
@@ -58,7 +58,7 @@ export const evaluate = async (
       return evalList(env, expr);
     }
 
-    if (expr.type === 'range') {
+    if (expr.type === 'range' || expr.type === 'regex') {
       return expr;
     }
   }

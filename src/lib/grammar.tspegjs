@@ -5,6 +5,16 @@
       type: 'list'
     }
   }
+
+  function makeRegex(regexStr, flagStr){
+    const regex = new RegExp(regexStr, flagStr);
+    const hasNamedGroups = regexStr.includes("?<");
+    return {
+      hasNamedGroups,
+      regex,
+      type: 'regex'
+    }
+  }
 }
 
 
@@ -19,6 +29,7 @@ Expression
   = List
   / Quoted
   / Range
+  / Regex
   / Atom
 
 // Lists
@@ -95,6 +106,14 @@ Symbol
 // Comments
 Comment
   = ";" chars:[^\n]* { return null }
+
+// Regex
+Regex
+  = "/" pattern:[^/]+ "/" flags:[ig]* {
+    const regexStr = pattern.join("");
+    const flagStr = flags.join("");
+    return makeRegex(regexStr, flagStr);
+  }
 
 _ "whitespace"
   = ([ \t\n\r] / Comment)*

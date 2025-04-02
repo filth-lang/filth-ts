@@ -12,15 +12,18 @@ import {
   isFilthList,
   isFilthNumber,
   isFilthRange,
-  isString,
+  isFilthRegex,
+  isFilthString,
   isTruthy
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
+import { doesFilthRegexMatch } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalLambda } from './lambda';
 import { evalLet } from './let';
+import { evalRegex } from './regex';
 
 const log = createLog('eval/list');
 
@@ -31,7 +34,7 @@ export const evalList = async (
   const [operator, ...args] = expr.elements;
 
   // Handle multiple top-level expressions by treating them as a begin expression
-  // if (expr.elements.length > 0 && !isString(expr.elements[0])) {
+  // if (expr.elements.length > 0 && !isFilthString(expr.elements[0])) {
   //   // log.debug('[evaluate] begin', expr);
   //   let result: FilthExpr | null = null;
   //   for (const e of expr.elements) {
@@ -46,7 +49,7 @@ export const evalList = async (
     return null;
   }
 
-  if (isString(operator)) {
+  if (isFilthString(operator)) {
     switch (operator) {
       case 'def':
       case 'define':
@@ -117,6 +120,10 @@ export const evalList = async (
 
         if (isFilthRange(evaluatedA)) {
           return isFilthRangeIn(evaluatedA, evaluatedB);
+        }
+
+        if (isFilthRegex(evaluatedA)) {
+          return doesFilthRegexMatch(evaluatedA, evaluatedB);
         }
 
         return evaluatedA === evaluatedB;
@@ -248,7 +255,7 @@ export const evalList = async (
       const evaluatedArgs = await Promise.all(
         args.map(async arg => await evaluate(env, arg))
       );
-      log.debug('[eval] range', fn);
+      // log.debug('[eval] range', fn);
       // log.debug('[eval] range args', evaluatedArgs);
 
       if (!evaluatedArgs.length) {
@@ -275,6 +282,10 @@ export const evalList = async (
         // newEnv.define(i.toString(), i);
       }
       return createFilthList(result);
+    }
+
+    if (isFilthRegex(fn)) {
+      return evalRegex(env, fn, args);
     }
 
     if (typeof fn === 'function') {

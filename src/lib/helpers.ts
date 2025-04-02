@@ -8,6 +8,7 @@ import {
   FilthNil,
   FilthQuotedExpr,
   FilthRange,
+  FilthRegex,
   FilthValue
 } from './types';
 
@@ -29,7 +30,7 @@ export const isPromise = (expr: FilthExpr): boolean =>
   'then' in expr &&
   typeof expr.then === 'function';
 
-export const isString = (expr: FilthExpr): expr is string =>
+export const isFilthString = (expr: FilthExpr): expr is string =>
   typeof expr === 'string';
 
 export const isFilthNil = (expr: FilthExpr): expr is FilthNil =>
@@ -60,6 +61,12 @@ export const isFilthRange = (expr: FilthExpr): expr is FilthRange =>
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'range';
+
+export const isFilthRegex = (expr: FilthExpr): expr is FilthRegex =>
+  expr !== null &&
+  typeof expr === 'object' &&
+  'type' in expr &&
+  expr.type === 'regex';
 
 export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';
@@ -112,13 +119,13 @@ export const checkRestParams = (params: FilthExpr[]) => {
         throw new EvaluationError('rest parameter missing');
       }
       const nextParam = params[ii + 1];
-      if (!isString(nextParam)) {
+      if (!isFilthString(nextParam)) {
         throw new EvaluationError('rest parameter must be a symbol');
       }
       restParam = nextParam;
       break;
     }
-    if (!isString(param)) {
+    if (!isFilthString(param)) {
       throw new EvaluationError('parameter must be a symbol');
     }
     parameters.push(param);

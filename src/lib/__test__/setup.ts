@@ -4,6 +4,7 @@ import { createLog } from '@helpers/log';
 import { isFilthList, isFilthRange } from '@lib/helpers';
 import { FilthExpr, FilthList, FilthRange } from '@lib/types';
 import { expect } from 'bun:test';
+import { createFilthList } from '../helpers';
 
 const log = createLog('test');
 declare module 'bun:test' {
@@ -13,7 +14,7 @@ declare module 'bun:test' {
   }
 }
 
-const toEqualFilthList = (actual: unknown, expected: FilthExpr[]) => {
+const toEqualFilthList = (actual: unknown, expected: FilthExpr) => {
   if (!isFilthList(actual as FilthExpr)) {
     return {
       message: () => `expected ${actual} to be a Filth list`,
@@ -21,10 +22,23 @@ const toEqualFilthList = (actual: unknown, expected: FilthExpr[]) => {
     };
   }
 
+  if (!isFilthList(expected) && Array.isArray(expected)) {
+    expected = createFilthList(expected);
+  }
+
+  const expectedList = expected as FilthList;
+
   const filthList = actual as FilthList;
+
+  // log.debug('[assertEqualFilthList]', actual, expected);
+
   const pass =
-    filthList.elements.length === expected.length &&
-    filthList.elements.every((element, index) => element === expected[index]);
+    filthList.elements.length === expectedList.elements.length &&
+    filthList.elements.every(
+      (element, index) => element === expectedList.elements[index]
+    );
+
+  // log.debug('[assertEqualFilthList]', pass);
 
   return {
     message: () =>
