@@ -22,6 +22,7 @@ export const getFilthType = (expr: FilthExpr): string => {
   }
   return typeof expr === 'object' && 'type' in expr ? expr.type : typeof expr;
 };
+
 export const isPromise = (expr: FilthExpr): boolean =>
   expr !== null &&
   typeof expr === 'object' &&
@@ -62,6 +63,9 @@ export const isFilthRange = (expr: FilthExpr): expr is FilthRange =>
 
 export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';
+
+export const isFilthNumber = (expr: FilthExpr): expr is number =>
+  typeof expr === 'number';
 
 export const isFilthValue = (expr: FilthExpr): expr is FilthValue =>
   typeof expr === 'number' ||
