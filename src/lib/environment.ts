@@ -1,6 +1,6 @@
 import { createLog } from '@helpers/log';
 import { UndefinedSymbolError } from './error';
-import { isFilthFunction } from './helpers';
+import { isFilthFunction, isFilthQuotedString } from './helpers';
 import { FilthExpr } from './types';
 
 const log = createLog('environment');
@@ -92,31 +92,20 @@ export class Environment {
   }
 }
 
-// export const lookupBinding = (
-//   bindings: Map<string, BindingList>,
-//   name: string,
-//   args: FilthExpr[]
-// ) => {
-//   const list = bindings.get(name);
-
-//   const binding = findBinding(list, args);
-//   if (binding) {
-//     return binding;
-//   }
-// }
-
 export const findBinding = (
   bindings: BindingList | undefined,
   args: FilthExpr[] | undefined
 ) => {
-  // log.debug('[findBinding]', args);
   if (!bindings || !args) {
     return null;
   }
+  // log.debug('[findBinding]', args);
 
   for (const binding of bindings) {
     if (isFilthFunction(binding.value)) {
-      if (compareParams(binding.value.params, args)) {
+      const result = compareParams(binding.value.params, args);
+      // log.debug('[findBinding] comparing', binding.value.params, args, result);
+      if (result) {
         return binding;
       }
     }
@@ -128,9 +117,21 @@ const compareParams = (params: string[], args: FilthExpr[]) => {
     return false;
   }
   for (let ii = 0; ii < params.length; ii++) {
-    if (params[ii] !== args[ii]) {
+    const param = params[ii];
+    const arg = args[ii];
+    if (isFilthQuotedString(param)) {
+      if (param !== arg) {
+        return false;
+      }
+    }
+    if (typeof param === typeof arg && param !== arg) {
       return false;
     }
+    // if (isFilthFunction(param)) {
+    //   if (!compareParams(param.params, arg)) {
+    //     return false;
+    //   }
+    // }
   }
   return true;
 };

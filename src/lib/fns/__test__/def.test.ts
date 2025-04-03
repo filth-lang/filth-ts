@@ -28,7 +28,7 @@ describe('Filth', () => {
       expect(env).envToContain(symbol, expected);
     });
 
-    test('overloading def functions', async () => {
+    test('overloading def functions with constant string args', async () => {
       const result = await env.eval(`
       
         (def (hello "world") '("saying hello to world"))
@@ -38,6 +38,42 @@ describe('Filth', () => {
       `);
 
       expect(result).toEqualFilthList(['"saying hello to world"']);
+    });
+
+    test('overloading def functions with constant numeric args', async () => {
+      const result = await env.eval(`
+      
+        (def (age 12) '("child"))
+        (def (age 25) '("adult"))
+        
+        (age 12)
+      `);
+
+      expect(result).toEqualFilthList(['"child"']);
+    });
+
+    test('overloading def functions with args', async () => {
+      const result = await env.eval(`
+      
+        (def (arith mul x y) (* x y))
+        (def (arith add x y) (+ x y))
+        
+        (arith mul 2 3)
+      `);
+
+      expect(result).toEqual(6);
+    });
+
+    test.skip('overloading def functions with regex args', async () => {
+      const result = await env.eval(`
+      
+        (def (open /door/ ) '("opened")
+        (def (close /door/ ) '("closed")
+        
+        (open "door")
+      `);
+
+      expect(result).toEqualFilthList(['"opened"']);
     });
 
     it.skip('should perform json operations', async () => {

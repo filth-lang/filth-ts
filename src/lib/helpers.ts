@@ -41,6 +41,9 @@ export const isPromise = (expr: unknown): boolean =>
 export const isFilthString = (expr: unknown): expr is string =>
   typeof expr === 'string';
 
+export const isFilthQuotedString = (expr: unknown): expr is string =>
+  typeof expr === 'string' && expr.startsWith('"') && expr.endsWith('"');
+
 export const isFilthNil = (expr: unknown): expr is FilthNil =>
   expr === null ||
   expr === undefined ||
@@ -134,7 +137,7 @@ export const isFalsey = (
   value === null || value === false || value === undefined || value === 'false';
 
 export const checkRestParams = (params: FilthExpr[]) => {
-  const parameters: string[] = [];
+  const parameters: FilthExpr[] = [];
   let hasRest = false;
   let restParam = '';
 
@@ -152,9 +155,9 @@ export const checkRestParams = (params: FilthExpr[]) => {
       restParam = nextParam;
       break;
     }
-    if (!isFilthString(param)) {
-      throw new EvaluationError('parameter must be a symbol');
-    }
+    // if (!isFilthString(param)) {
+    //   throw new EvaluationError('parameter must be a symbol');
+    // }
     parameters.push(param);
   }
 
