@@ -34,7 +34,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
     }
 
     const evaluatedValue = await evaluate(env, body[0]);
-    // log.debug('[define] eval body', body[0], evaluatedValue);
+    // log.debug('[define] defining ', nameOrList, evaluatedValue);
     env.define(nameOrList, evaluatedValue);
     return null;
   }
@@ -51,7 +51,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
 
   const { hasRest, parameters, restParam } = checkRestParams(params);
 
-  // log.debug('[define] params', params);
+  log.debug('[define] params', params);
   // log.debug('[define] hasRest', hasRest);
   // log.debug('[define] parameters', parameters);
   // log.debug('[define] restParam', restParam);
@@ -63,7 +63,8 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
       body.length === 1
         ? body[0]
         : {
-            elements: ['begin', ...body],
+            elements: [...body],
+            // elements: ['begin', ...body],
             type: 'list'
           },
     env,

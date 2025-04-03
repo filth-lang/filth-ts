@@ -28,17 +28,16 @@ describe('Filth', () => {
       expect(env).envToContain(symbol, expected);
     });
 
-    test.skip('overloading def functions', async () => {
-      await env.eval(`
+    test('overloading def functions', async () => {
+      const result = await env.eval(`
       
-        def (hello "world") ("saying hello to world")
-        def (hello "moon") ("saying hello to moon")
+        (def (hello "world") '("saying hello to world"))
+        (def (hello "moon") '("saying hello to moon"))
         
+        (hello "world")
       `);
 
-      log.debug(env.getBindings());
-
-      expect(true).toBe(true);
+      expect(result).toEqualFilthList(['"saying hello to world"']);
     });
 
     it.skip('should perform json operations', async () => {

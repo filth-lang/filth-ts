@@ -170,10 +170,10 @@ export const evalList = async (
         return evalLet(env, args);
 
       default:
-        // log.debug('[evaluate] operator', operator);
+        log.debug('[evaluate] operator', operator, args);
         // log.debug('[evaluate] bindings', Array.from(env.getBindings().keys()));
         // For non-special forms, evaluate the operator and apply it
-        const { options, value: fn } = env.lookup(operator);
+        const { options, value: fn } = env.lookup(operator, args);
 
         if (typeof fn === 'function') {
           // Handle built-in functions

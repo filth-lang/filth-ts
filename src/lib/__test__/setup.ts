@@ -38,11 +38,9 @@ const envToContain = (env: unknown, symbol: unknown, expected: unknown) => {
     };
   }
 
-  const bindings = env.getBindings();
+  const binding = env.lookup(symbol);
 
-  const binding = bindings.get(symbol);
-
-  log.debug('[envToContain]', symbol, binding);
+  // log.debug('[envToContain]', symbol, binding);
 
   if (!binding) {
     return {
