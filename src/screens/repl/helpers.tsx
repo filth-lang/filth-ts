@@ -22,7 +22,7 @@ export const getMessagePrompt = (message: Message): string => {
     case 'error':
       return 'Error:';
     case 'log':
-      return '[log] ';
+      return '; ';
     default:
       return '';
   }

@@ -1,3 +1,4 @@
+import { Environment } from './environment';
 import { EvaluationError } from './error';
 import {
   FilthBasicValue,
@@ -26,6 +27,10 @@ export const getFilthType = (expr: FilthExpr): string => {
   }
   return typeof expr === 'object' && 'type' in expr ? expr.type : typeof expr;
 };
+
+export const isFilthEnv = (expr: unknown): expr is Environment =>
+  // eslint-disable-next-line @nkzw/no-instanceof
+  expr instanceof Environment;
 
 export const isPromise = (expr: FilthExpr): boolean =>
   expr !== null &&
@@ -93,6 +98,13 @@ export const isFilthValue = (expr: FilthExpr): expr is FilthValue =>
   typeof expr === 'number' ||
   typeof expr === 'string' ||
   typeof expr === 'boolean';
+
+export const removeQuotes = (expr: string) => {
+  if (expr.startsWith('"') && expr.endsWith('"')) {
+    return expr.slice(1, -1);
+  }
+  return expr;
+};
 
 export const isFilthBuiltinFunction = (
   expr: FilthExpr

@@ -15,7 +15,7 @@ describe('Filth', () => {
     });
 
     it('should accept a string as a string', async () => {
-      expect(await env.eval(`"hello"`)).toBe('hello');
+      expect(await env.eval(`"hello"`)).toBe('"hello"');
     });
   });
 });

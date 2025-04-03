@@ -9,10 +9,10 @@ describe('Filth', () => {
       env = createEnv();
     });
 
-    it('should handle rest parameters in define', async () => {
+    it('should handle rest parameters in def', async () => {
       const input = `
       ; Function that takes rest parameters
-      (define (sum first . rest)
+      (def (sum first . rest)
         (if (null? rest)
             first
             (+ first (apply sum rest))))
@@ -26,7 +26,7 @@ describe('Filth', () => {
 
     it('should handle rest apply', async () => {
       const input = `
-      (define (sum x y z)
+      (def (sum x y z)
         (+ x y z))
       (apply sum '(1 2 3))
       `;

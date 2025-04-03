@@ -6,7 +6,8 @@ import pkg from './package.json' with { type: 'json' };
 export default defineConfig({
   build: {
     emptyOutDir: true,
-    outDir: 'dist-site'
+    outDir: 'dist-site',
+    sourcemap: true
   },
   define: {
     __API_URL__: 'window.__backend_api_url',

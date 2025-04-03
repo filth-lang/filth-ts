@@ -7,7 +7,8 @@ import {
   isFilthJSON,
   isFilthJSONArray,
   isFilthJSONObject,
-  isFilthString
+  isFilthString,
+  removeQuotes
 } from '../../helpers';
 import { evaluate } from '../evaluate';
 
@@ -31,7 +32,8 @@ export const evalJSON = async (
 
   for (const arg of evaluatedArgs) {
     if (isFilthString(arg)) {
-      const ptr = arg.startsWith('/') ? arg : `/${arg}`;
+      const dequotedArg = removeQuotes(arg);
+      const ptr = dequotedArg.startsWith('/') ? dequotedArg : `/${dequotedArg}`;
       const pointerResult = JSONPointer.get(expr.json, ptr);
       result.push(pointerResult);
     }

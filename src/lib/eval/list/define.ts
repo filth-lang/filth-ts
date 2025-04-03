@@ -19,6 +19,8 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
   // log.debug('[define] nameOrList', nameOrList);
   // log.debug('[define] body', body);
 
+  // first arg is a symbol, the rest is the body
+  // eg: (define x 10)
   if (!isFilthList(nameOrList)) {
     if (!isFilthString(nameOrList)) {
       throw new EvaluationError(
@@ -30,7 +32,9 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
         `Define expects exactly one value, received ${body.length}`
       );
     }
+
     const evaluatedValue = await evaluate(env, body[0]);
+    // log.debug('[define] eval body', body[0], evaluatedValue);
     env.define(nameOrList, evaluatedValue);
     return null;
   }

@@ -19,12 +19,10 @@ describe('Filth', () => {
     });
 
     test.each([
-      [`"filth"`, 'filth'],
+      [`"filth"`, '"filth"'],
 
-      // TODO should eval to a list
       [`{"lang": "filth"} "lang"`, createFilthList(['filth'])],
 
-      // TODO should eval to a list
       [
         `{"lang": "filth"} {"isFilthy": true}`,
         createFilthJSON({ isFilthy: true, lang: 'filth' })
@@ -80,14 +78,19 @@ describe('Filth', () => {
 
         { "a": 4, "b": { "c": true }}
          
+        ; transform <json> (from to)
         transform { "a": 4, "b": { "c": true }} ("/b/c" "/valid")
         ; { "a": 4, "valid": true }
 
-
+        ; transform <json> (from to fn)
         transform { "a": 4 } ("/a" "/count", (fn (val) (* val 2 ) ) 
         ; { "a": 8 }
 
+        to_s { "a": 4 }
+        ; "{a: 4}"
 
+        to_json "{a: 4}"
+        ; { "a": 4 }
          
         `);
 

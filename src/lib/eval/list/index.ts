@@ -5,9 +5,7 @@ import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
 import {
-  createFilthList,
   isFilthBasicValue,
-  isFilthBuiltinFunction,
   isFilthFunction,
   isFilthJSON,
   isFilthList,
@@ -25,6 +23,7 @@ import { evalDefine } from './define';
 import { evalJSON } from './json';
 import { evalLambda } from './lambda';
 import { evalLet } from './let';
+import { evalRange } from './range';
 import { evalRegex } from './regex';
 
 const log = createLog('eval/list');
@@ -254,36 +253,7 @@ export const evalList = async (
     }
 
     if (isFilthRange(fn)) {
-      const evaluatedArgs = await Promise.all(
-        args.map(async arg => await evaluate(env, arg))
-      );
-      // log.debug('[eval] range', fn);
-      // log.debug('[eval] range args', evaluatedArgs);
-
-      if (!evaluatedArgs.length) {
-        throw new EvaluationError('range requires at least one argument');
-      }
-      const argFn = evaluatedArgs[0];
-
-      const newEnv = env.create();
-      const [start, end] = fn.elements;
-      const result: FilthExpr[] = [];
-
-      // if (isFilthFunction(argFn)) {
-      //   log.debug('[eval] range argFn body', argFn.body);
-      // }
-
-      for (let i = start; i <= end; i++) {
-        if (isFilthBuiltinFunction(argFn)) {
-          result.push(await argFn(i));
-        } else if (isFilthFunction(argFn)) {
-          const params = argFn.params;
-          newEnv.define(params[0], i);
-          result.push(await evaluate(newEnv, argFn.body));
-        }
-        // newEnv.define(i.toString(), i);
-      }
-      return createFilthList(result);
+      return evalRange(env, fn, args);
     }
 
     if (isFilthRegex(fn)) {
@@ -302,10 +272,6 @@ export const evalList = async (
       return fn(...evaluatedArgs);
     }
 
-    // log.debug(
-    //   '[apply] fn',
-    //   `Cannot apply ${JSON.stringify(fn)} as a function`
-    // );
     throw new EvaluationError(
       `Cannot apply ${JSON.stringify(fn)} as a function`
     );

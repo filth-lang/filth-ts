@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 
 import { createLog } from '@helpers/log';
-import { isFilthList, isFilthRange } from '@lib/helpers';
+import { isFilthEnv, isFilthList, isFilthRange } from '@lib/helpers';
 import { FilthExpr, FilthList, FilthRange } from '@lib/types';
 import { expect } from 'bun:test';
 import { createFilthList } from '../helpers';
@@ -9,10 +9,39 @@ import { createFilthList } from '../helpers';
 const log = createLog('test');
 declare module 'bun:test' {
   interface Matchers<T> {
-    toEqualFilthList(expected: FilthExpr[]): T;
+    envToContain(symbol: string, expected: FilthExpr): T;
+    toEqualFilthList(expected: FilthList): T;
     toEqualFilthRange(expected: FilthRange): T;
   }
 }
+
+const envToContain = (env: unknown, symbol: string, expected: FilthExpr) => {
+  if (!isFilthEnv(env)) {
+    return {
+      message: () => `expected ${env} to be a Filth environment`,
+      pass: false
+    };
+  }
+
+  const bindings = env.getBindings();
+
+  const binding = bindings.get(symbol);
+
+  log.debug('[envToContain]', symbol, binding);
+
+  if (!binding) {
+    return {
+      message: () => `expected ${symbol} to be in the environment`,
+      pass: false
+    };
+  }
+
+  return {
+    message: () =>
+      `expected binding ${symbol} to equal ${expected}, not ${binding.value}`,
+    pass: binding.value === expected
+  };
+};
 
 const toEqualFilthList = (actual: unknown, expected: FilthExpr) => {
   if (!isFilthList(actual as FilthExpr)) {
@@ -72,6 +101,7 @@ const toEqualFilthRange = (actual: unknown, expected: FilthRange) => {
 };
 
 expect.extend({
+  envToContain,
   toEqualFilthList,
   toEqualFilthRange
 });

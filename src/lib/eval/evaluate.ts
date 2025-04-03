@@ -23,9 +23,11 @@ export const evaluate = async (
   }
 
   if (isFilthString(expr)) {
+    // log.debug('[evaluate]', expr);
     // If the string is already a string value (not a symbol), return it as is
     if (expr.startsWith('"') && expr.endsWith('"')) {
-      return expr.slice(1, -1);
+      // return expr.slice(1, -1);
+      return expr;
     }
     // Otherwise, it's a symbol that needs to be looked up
     const { value } = env.lookup(expr);

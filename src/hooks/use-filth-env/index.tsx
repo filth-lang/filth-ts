@@ -42,6 +42,15 @@ export const useFilthEnv = () => {
       return null;
     });
 
+    env.current.define('@bindings', () => {
+      addLogMessage('@bindings:');
+      log.debug('@bindings:', env.current.getBindings());
+      for (const [key, value] of env.current.getBindings().entries()) {
+        addLogMessage(`${key} = ${listExprToString(value)}`);
+      }
+      return null;
+    });
+
     defineCanvas(env.current);
 
     // env.current.eval('(log "Hello, world!")');

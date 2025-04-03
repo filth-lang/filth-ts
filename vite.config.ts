@@ -12,6 +12,7 @@ export default defineConfig({
       fileName: 'index',
       formats: ['es']
     },
+    minify: 'esbuild',
     rollupOptions: {
       external: ['preact'],
       output: {
@@ -19,7 +20,8 @@ export default defineConfig({
           preact: 'preact'
         }
       }
-    }
+    },
+    sourcemap: true
   },
   define: {
     __API_URL__: 'window.__backend_api_url',
