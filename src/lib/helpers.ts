@@ -32,51 +32,51 @@ export const isFilthEnv = (expr: unknown): expr is Environment =>
   // eslint-disable-next-line @nkzw/no-instanceof
   expr instanceof Environment;
 
-export const isPromise = (expr: FilthExpr): boolean =>
+export const isPromise = (expr: unknown): boolean =>
   expr !== null &&
   typeof expr === 'object' &&
   'then' in expr &&
   typeof expr.then === 'function';
 
-export const isFilthString = (expr: FilthExpr): expr is string =>
+export const isFilthString = (expr: unknown): expr is string =>
   typeof expr === 'string';
 
-export const isFilthNil = (expr: FilthExpr): expr is FilthNil =>
+export const isFilthNil = (expr: unknown): expr is FilthNil =>
   expr === null ||
   expr === undefined ||
   (typeof expr === 'object' && 'type' in expr && expr.type === 'nil');
 
-export const isFilthList = (expr: FilthExpr): expr is FilthList =>
+export const isFilthList = (expr: unknown): expr is FilthList =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'list';
 
-export const isFilthFunction = (expr: FilthExpr): expr is FilthFunction =>
+export const isFilthFunction = (expr: unknown): expr is FilthFunction =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'function';
 
-export const isFilthQuotedExpr = (expr: FilthExpr): expr is FilthQuotedExpr =>
+export const isFilthQuotedExpr = (expr: unknown): expr is FilthQuotedExpr =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'quoted';
 
-export const isFilthRange = (expr: FilthExpr): expr is FilthRange =>
+export const isFilthRange = (expr: unknown): expr is FilthRange =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'range';
 
-export const isFilthRegex = (expr: FilthExpr): expr is FilthRegex =>
+export const isFilthRegex = (expr: unknown): expr is FilthRegex =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
   expr.type === 'regex';
 
-export const isFilthJSON = (expr: FilthExpr): expr is FilthJSON =>
+export const isFilthJSON = (expr: unknown): expr is FilthJSON =>
   expr !== null &&
   typeof expr === 'object' &&
   'type' in expr &&
@@ -88,13 +88,13 @@ export const isFilthJSONObject = (expr: unknown): expr is FilthJSONObject =>
 export const isFilthJSONArray = (expr: unknown): expr is FilthJSONArray =>
   expr !== null && typeof expr === 'object' && Array.isArray(expr);
 
-export const isFilthBasicValue = (expr: FilthExpr): expr is FilthBasicValue =>
+export const isFilthBasicValue = (expr: unknown): expr is FilthBasicValue =>
   expr === null || typeof expr === 'number' || typeof expr === 'boolean';
 
-export const isFilthNumber = (expr: FilthExpr): expr is number =>
+export const isFilthNumber = (expr: unknown): expr is number =>
   typeof expr === 'number';
 
-export const isFilthValue = (expr: FilthExpr): expr is FilthValue =>
+export const isFilthValue = (expr: unknown): expr is FilthValue =>
   typeof expr === 'number' ||
   typeof expr === 'string' ||
   typeof expr === 'boolean';
@@ -107,10 +107,10 @@ export const removeQuotes = (expr: string) => {
 };
 
 export const isFilthBuiltinFunction = (
-  expr: FilthExpr
+  expr: unknown
 ): expr is FilthBuiltinFunction => typeof expr === 'function'; // && 'type' in expr && expr.type === 'builtin';
 
-export const isFilthExpr = (expr: FilthExpr): expr is FilthExpr =>
+export const isFilthExpr = (expr: unknown): expr is FilthExpr =>
   isFilthBasicValue(expr) ||
   isFilthValue(expr) ||
   isFilthList(expr) ||
@@ -161,7 +161,7 @@ export const checkRestParams = (params: FilthExpr[]) => {
   return { hasRest, parameters, restParam };
 };
 
-export const listExprToString = (expr: FilthExpr): string => {
+export const listExprToString = (expr: unknown): string => {
   if (isFilthValue(expr)) {
     return expr + '';
   }

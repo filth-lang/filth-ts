@@ -1,24 +1,39 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 
 import { createLog } from '@helpers/log';
-import { isFilthEnv, isFilthList, isFilthRange } from '@lib/helpers';
-import { FilthExpr, FilthList, FilthRange } from '@lib/types';
+import {
+  isFilthBasicValue,
+  isFilthEnv,
+  isFilthFunction,
+  isFilthList,
+  isFilthRange,
+  isFilthString,
+  isFilthValue
+} from '@lib/helpers';
+import { FilthExpr, FilthFunction, FilthList, FilthRange } from '@lib/types';
 import { expect } from 'bun:test';
 import { createFilthList } from '../helpers';
 
 const log = createLog('test');
 declare module 'bun:test' {
   interface Matchers<T> {
-    envToContain(symbol: string, expected: FilthExpr): T;
-    toEqualFilthList(expected: FilthList): T;
+    envToContain(symbol: unknown, expected: unknown): T;
+    toEqualFilthList(expected: FilthList | FilthExpr[]): T;
     toEqualFilthRange(expected: FilthRange): T;
   }
 }
 
-const envToContain = (env: unknown, symbol: string, expected: FilthExpr) => {
+const envToContain = (env: unknown, symbol: unknown, expected: unknown) => {
   if (!isFilthEnv(env)) {
     return {
       message: () => `expected ${env} to be a Filth environment`,
+      pass: false
+    };
+  }
+
+  if (!isFilthString(symbol)) {
+    return {
+      message: () => `expected ${symbol} to be a string`,
       pass: false
     };
   }
@@ -36,14 +51,84 @@ const envToContain = (env: unknown, symbol: string, expected: FilthExpr) => {
     };
   }
 
+  if (isFilthValue(expected) || isFilthBasicValue(expected)) {
+    return {
+      message: () =>
+        `expected binding ${symbol} to equal ${expected}, not ${binding.value}`,
+      pass: binding.value === expected
+    };
+  }
+
+  if (!expected || typeof expected !== 'object') {
+    return {
+      message: () => `expected ${expected} to be an object`,
+      pass: false
+    };
+  }
+
+  if (!isFilthFunction(binding.value)) {
+    return {
+      message: () => `expected binding ${symbol} to be a Filth function`,
+      pass: false
+    };
+  }
+
+  if ('params' in expected) {
+    const bindingFunction = binding as unknown as FilthFunction;
+
+    const expectedParams = expected.params as unknown as string[];
+    const bindingParams = bindingFunction.params;
+
+    if (expectedParams && bindingParams) {
+      const pass = expectedParams.every(
+        (param, index) => param === bindingParams[index]
+      );
+
+      if (!pass) {
+        return {
+          message: () =>
+            `expected binding params to equal ${JSON.stringify(expectedParams)}`,
+          pass
+        };
+      }
+    }
+  }
+
+  if ('body' in expected) {
+    const bindingBody = binding.value.body;
+    const expectedBody = expected.body as unknown as FilthExpr[];
+
+    if (!bindingBody) {
+      return {
+        message: () => `expected binding ${symbol} to have a body`,
+        pass: false
+      };
+    }
+
+    const pass =
+      isFilthList(bindingBody) &&
+      bindingBody.elements.every((expr, index) => expr === expectedBody[index]);
+
+    if (!pass) {
+      return {
+        message: () =>
+          `expected binding body to equal ${JSON.stringify(expected.body)}`,
+        pass: false
+      };
+    }
+  }
+
   return {
     message: () =>
-      `expected binding ${symbol} to equal ${expected}, not ${binding.value}`,
-    pass: binding.value === expected
+      `expected binding ${symbol} to equal ${JSON.stringify(expected)}`,
+    pass: true
   };
 };
 
-const toEqualFilthList = (actual: unknown, expected: FilthExpr) => {
+const toEqualFilthList = (
+  actual: unknown,
+  expected: FilthList | FilthExpr[]
+) => {
   if (!isFilthList(actual as FilthExpr)) {
     return {
       message: () => `expected ${actual} to be a Filth list`,

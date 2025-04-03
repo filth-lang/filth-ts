@@ -21,10 +21,24 @@ describe('Filth', () => {
 
     test.each([
       // [`"filth"`, 'filth'],
-      [`def hello "nice"`, '"nice"']
-    ])('json %p should evalute to %p', async (expr, expected) => {
-      const result = await env.eval(expr);
-      expect(env).envToContain('hello', expected);
+      [`def hello "nice"`, 'hello', '"nice"'],
+      [`def (mult x) (* x 2)`, 'mult', { body: ['*', 'x', 2], params: ['x'] }]
+    ])('json %p should evalute to %p', async (expr, symbol, expected) => {
+      await env.eval(expr);
+      expect(env).envToContain(symbol, expected);
+    });
+
+    test.skip('overloading def functions', async () => {
+      await env.eval(`
+      
+        def (hello "world") ("saying hello to world")
+        def (hello "moon") ("saying hello to moon")
+        
+      `);
+
+      log.debug(env.getBindings());
+
+      expect(true).toBe(true);
     });
 
     it.skip('should perform json operations', async () => {
