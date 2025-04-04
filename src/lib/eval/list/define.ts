@@ -1,4 +1,4 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import {
@@ -51,7 +51,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
 
   const { hasRest, parameters, restParam } = checkRestParams(params);
 
-  log.debug('[define] params', params);
+  // log.debug('[define] params', params);
   // log.debug('[define] hasRest', hasRest);
   // log.debug('[define] parameters', parameters);
   // log.debug('[define] restParam', restParam);

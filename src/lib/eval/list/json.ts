@@ -1,7 +1,5 @@
-import { Environment } from '@filth/environment';
-import { FilthExpr, FilthJSON, FilthJSONArray } from '@filth/types';
-import { createLog } from '@helpers/log';
-import JSONPointer from 'json-pointer';
+import { Environment } from '@filth/env/env';
+import { evaluate } from '@filth/eval/evaluate';
 import {
   createFilthList,
   isFilthJSON,
@@ -9,8 +7,10 @@ import {
   isFilthJSONObject,
   isFilthString,
   removeQuotes
-} from '../../helpers';
-import { evaluate } from '../evaluate';
+} from '@filth/helpers';
+import { FilthExpr, FilthJSON, FilthJSONArray } from '@filth/types';
+import { createLog } from '@helpers/log';
+import JSONPointer from 'json-pointer';
 
 const log = createLog('eval/range');
 

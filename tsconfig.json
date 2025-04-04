@@ -17,9 +17,6 @@
       "@helpers/*": [
         "./src/helpers/*"
       ],
-      "@lib/*": [
-        "./src/lib/*"
-      ],
       "@model/*": [
         "./src/model/*"
       ],

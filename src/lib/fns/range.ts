@@ -1,5 +1,5 @@
-import { isFilthList, isFilthNumber, isFilthRange } from '../helpers';
-import { FilthExpr, FilthRange } from '../types';
+import { isFilthList, isFilthNumber, isFilthRange } from '@filth/helpers';
+import { FilthExpr, FilthRange } from '@filth/types';
 
 export const createFilthRange = (
   start: number,

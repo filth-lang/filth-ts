@@ -9,5 +9,13 @@
   "endOfLine": "lf",
   "plugins": [
     "@ianvs/prettier-plugin-sort-imports"
+  ],
+  "importOrder": [
+    "^vitest$",
+    "",
+    "^@filth/(.*)$",
+    "^@.*",
+    "",
+    "^[.]"
   ]
 }

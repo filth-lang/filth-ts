@@ -1,4 +1,4 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { getFilthType, isFilthFunction, isFilthList } from '@filth/helpers';
@@ -35,7 +35,7 @@ export const evalApply = async (env: Environment, args: FilthExpr[]) => {
 
     // bind parameters
     for (let ii = 0; ii < fn.params.length; ii++) {
-      newEnv.define(fn.params[ii], allArgs[ii]);
+      newEnv.define(fn.params[ii] as string, allArgs[ii]);
     }
 
     // handle rest parameter if present

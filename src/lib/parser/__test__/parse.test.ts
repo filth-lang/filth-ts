@@ -1,7 +1,7 @@
-import { describe, expect, it, test } from 'bun:test';
-import { parse } from '../parse';
-import { FilthJSON, FilthRange, FilthRegex } from '../types';
-import { exprToJson } from './helpers';
+import { describe, expect, it, test } from 'vitest';
+import { parse } from '..';
+import { exprToJson } from '../../__test__/helpers';
+import { FilthJSON, FilthRange, FilthRegex } from '../../types';
 
 describe('Filth', () => {
   describe('Parser', () => {

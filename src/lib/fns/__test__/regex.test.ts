@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, test } from 'bun:test';
-import { createEnv, EvalEnvironment } from '../../create';
-import '../../__test__/setup';
-import { FilthExpr } from '../../types';
+import { beforeEach, describe, expect, it, test } from 'vitest';
+
+import { createEnv, EvalEnvironment } from '@filth/env/create';
+import { FilthExpr } from '@filth/types';
 
 describe('Filth', () => {
   describe('Regex', () => {

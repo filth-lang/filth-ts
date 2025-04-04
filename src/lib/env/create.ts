@@ -1,9 +1,9 @@
+import { Environment } from '@filth/env/env';
+import { evaluate } from '@filth/eval/evaluate';
+import { isFilthList, isFilthNil, isFilthString } from '@filth/helpers';
+import { parse } from '@filth/parser/index';
+import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { Environment } from './environment';
-import { isFilthList, isFilthNil, isFilthString } from './helpers';
-import { evaluate } from './index';
-import { parse } from './parse';
-import { FilthExpr } from './types';
 
 const log = createLog('filth');
 

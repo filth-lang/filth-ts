@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, test } from 'bun:test';
-import { createEnv, EvalEnvironment } from '../../create';
-import '../../__test__/setup';
-import { createFilthList } from '../../helpers';
-import { FilthExpr } from '../../types';
-import { createFilthJSON } from '../json';
+import { beforeEach, describe, expect, it, test } from 'vitest';
+
+import { createEnv, EvalEnvironment } from '@filth/env/create';
+import { createFilthJSON } from '@filth/fns/json';
+import { createFilthList } from '@filth/helpers';
+import { FilthExpr } from '@filth/types';
 
 describe('Filth', () => {
   describe('JSON', () => {

@@ -1,13 +1,13 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
-import { FilthExpr, FilthRange } from '@filth/types';
-import { createLog } from '@helpers/log';
+import { evaluate } from '@filth/eval/evaluate';
 import {
   createFilthList,
   isFilthBuiltinFunction,
   isFilthFunction
-} from '../../helpers';
-import { evaluate } from '../evaluate';
+} from '@filth/helpers';
+import { FilthExpr, FilthRange } from '@filth/types';
+import { createLog } from '@helpers/log';
 
 const log = createLog('eval/range');
 
@@ -40,7 +40,7 @@ export const evalRange = async (
       result.push(await argFn(i));
     } else if (isFilthFunction(argFn)) {
       const params = argFn.params;
-      newEnv.define(params[0], i);
+      newEnv.define(params[0] as string, i);
       result.push(await evaluate(newEnv, argFn.body));
     }
     // newEnv.define(i.toString(), i);

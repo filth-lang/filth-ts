@@ -1,19 +1,19 @@
-import { createLog } from '@helpers/log';
-import { createEnv, EvalEnvironment } from '@lib/create';
+import { createEnv, EvalEnvironment } from '@filth/env/create';
+import { FilthArgumentError } from '@filth/error';
+import { evaluate } from '@filth/eval/evaluate';
 import {
   isFilthBuiltinFunction,
   isFilthExpr,
   isFilthFunction,
   listExprToString
-} from '@lib/helpers';
-import { FilthExpr, FilthFunction, FilthList } from '@lib/types';
+} from '@filth/helpers';
+import { FilthExpr, FilthFunction, FilthList } from '@filth/types';
+import { createLog } from '@helpers/log';
 import { addLogMessageAtom, addMessageAtom } from '@model/atoms';
 import { Message } from '@model/types';
 import { useSetAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'preact/hooks';
 import SJSON from 'superjson';
-import { evaluate } from '../../lib';
-import { FilthArgumentError } from '../../lib/error';
 
 const log = createLog('useFilthEnv');
 

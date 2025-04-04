@@ -3,7 +3,7 @@ import peggy from 'peggy';
 import tspegjs from 'ts-pegjs';
 
 // load grammar
-const grammar = fs.readFileSync('src/lib/grammar.tspegjs', 'utf8');
+const grammar = fs.readFileSync('src/lib/parser/grammar.tspegjs', 'utf8');
 
 const parser = peggy.generate(grammar, {
   allowedStartRules: ['Program'],

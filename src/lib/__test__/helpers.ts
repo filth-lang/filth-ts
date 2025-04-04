@@ -1,5 +1,5 @@
-import { isFilthList } from '@lib/helpers';
-import { FilthExpr, FilthList } from '@lib/types';
+import { isFilthList } from '@filth/helpers';
+import { FilthExpr, FilthList } from '@filth/types';
 
 export const firstOrMany = <T>(array: T[]): T | T[] =>
   array.length === 1 ? array[0] : array;

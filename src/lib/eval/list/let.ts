@@ -1,4 +1,4 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
 import { evaluate } from '@filth/eval/evaluate';
 import { isFilthList, isFilthString } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';

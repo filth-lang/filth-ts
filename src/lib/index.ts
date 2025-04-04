@@ -1,3 +1,3 @@
-export { evaluate } from './eval/index';
-export { createEnv } from './create';
-export { parse } from './parse';
+export { evaluate } from '@filth/eval/evaluate';
+export { createEnv } from '@filth/env/create';
+export { parse } from '@filth/parser/index';

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test';
-import { Environment } from '../environment';
+import { describe, expect, it } from 'vitest';
+import { Environment } from '../env/env';
 
 describe('Filth', () => {
   describe('Environment', () => {

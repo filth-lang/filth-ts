@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test';
-import { createEnv } from '../create';
+import { describe, expect, it } from 'vitest';
+import { createEnv } from '../env/create';
 
 describe('Filth', () => {
   it('should handle let expressions', async () => {

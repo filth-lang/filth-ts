@@ -1,7 +1,12 @@
+import { UndefinedSymbolError } from '@filth/error';
+import {
+  isFilthFunction,
+  isFilthQuotedString,
+  isFilthRegex,
+  isFilthString
+} from '@filth/helpers';
+import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { UndefinedSymbolError } from './error';
-import { isFilthFunction, isFilthQuotedString } from './helpers';
-import { FilthExpr } from './types';
 
 const log = createLog('environment');
 
@@ -65,6 +70,7 @@ export class Environment {
 
     const binding = findBinding(list, args);
     if (binding) {
+      // log.debug('[lookup] found binding', binding);
       return binding;
     }
 
@@ -112,7 +118,7 @@ export const findBinding = (
   }
 };
 
-const compareParams = (params: string[], args: FilthExpr[]) => {
+const compareParams = (params: FilthExpr[], args: FilthExpr[]) => {
   if (params.length !== args.length) {
     return false;
   }
@@ -120,12 +126,17 @@ const compareParams = (params: string[], args: FilthExpr[]) => {
     const param = params[ii];
     const arg = args[ii];
     if (isFilthQuotedString(param)) {
-      if (param !== arg) {
-        return false;
+      if (param === arg) {
+        return true;
       }
     }
-    if (typeof param === typeof arg && param !== arg) {
-      return false;
+    if (isFilthRegex(param) && isFilthString(arg)) {
+      if (param.regex.test(arg)) {
+        return true;
+      }
+    }
+    if (typeof param === typeof arg && param === arg) {
+      return true;
     }
     // if (isFilthFunction(param)) {
     //   if (!compareParams(param.params, arg)) {
@@ -133,5 +144,5 @@ const compareParams = (params: string[], args: FilthExpr[]) => {
     //   }
     // }
   }
-  return true;
+  return false;
 };

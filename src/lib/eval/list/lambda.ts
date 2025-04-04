@@ -1,8 +1,8 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
+import { LambdaError } from '@filth/error';
+import { parseLambdaParams } from '@filth/parser/index';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { LambdaError } from '../../error';
-import { parseLambdaParams } from '../../parse';
 
 const log = createLog('eval/apply');
 

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'bun:test';
-import { isFilthExpr } from '../helpers';
+import { isFilthExpr } from '@filth/helpers';
+import { describe, expect, it } from 'vitest';
 
 describe('Filth', () => {
   describe('helpers', () => {

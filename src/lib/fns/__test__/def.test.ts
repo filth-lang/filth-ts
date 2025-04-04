@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, test } from 'bun:test';
-import { createEnv, EvalEnvironment } from '../../create';
-import '../../__test__/setup';
+import { beforeEach, describe, expect, it, test } from 'vitest';
+
+import { createEnv, EvalEnvironment } from '@filth/env/create';
+import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { FilthExpr } from '../../types';
 
 const log = createLog('fns/def');
 
@@ -67,13 +67,13 @@ describe('Filth', () => {
     test.skip('overloading def functions with regex args', async () => {
       const result = await env.eval(`
       
-        (def (open /door/ ) '("opened")
-        (def (close /door/ ) '("closed")
+        (def (open /door/ ) "opened")
+        (def (open /(?<val>window)/ ) (+ "the " val " cannot be opened"))
         
-        (open "door")
+        (open "window")
       `);
 
-      expect(result).toEqualFilthList(['"opened"']);
+      expect(result).toEqual('"it cannot be opened"');
     });
 
     it.skip('should perform json operations', async () => {
@@ -97,7 +97,7 @@ describe('Filth', () => {
         (mult 10)
         ; 100
          
-        def (add /(?<val>\d+)/) (+ (to_i val) 10)
+        def (add /(?<val>d+)/) (+ (to_i val) 10)
         (add 5)
         ; 15
         `);

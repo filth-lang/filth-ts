@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 
-import { type Environment } from '@filth/environment';
+import { type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
@@ -17,7 +17,7 @@ import {
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { doesFilthRegexMatch } from '../../fns/regex';
+import { doesFilthRegexMatch, extractCaptureGroupNames } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalJSON } from './json';
@@ -203,8 +203,16 @@ export const evalList = async (
           // bind regular parameters
           const evaluatedArgs = args;
 
+          // TODO if an arg is a capture group regex, we need to extract the name
+          log.debug('[evaluate] lambda params', fn.params, 'with args', args);
+
           for (let ii = 0; ii < fn.params.length; ii++) {
-            newEnv.define(fn.params[ii], evaluatedArgs[ii]);
+            const param = fn.params[ii];
+            if (isFilthRegex(param)) {
+              extractCaptureGroupNames(param);
+            }
+            const arg = evaluatedArgs[ii];
+            newEnv.define(param as string, arg);
           }
 
           // handle rest parameter if present
@@ -246,8 +254,8 @@ export const evalList = async (
         args.map(async arg => await evaluate(env, arg))
       );
       log.debug('[apply] lambda params', fn.params);
-      fn.params.forEach((param: string, i: number) => {
-        newEnv.define(param, evaluatedArgs[i]);
+      fn.params.forEach((param: FilthExpr, i: number) => {
+        newEnv.define(param as string, evaluatedArgs[i]);
       });
       return evaluate(newEnv, fn.body);
     }

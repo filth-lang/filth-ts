@@ -1,13 +1,13 @@
-import { createLog } from '@helpers/log';
-import { ParseError } from './error';
-import { isFilthList } from './helpers';
+import { ParseError } from '@filth/error';
+import { isFilthList } from '@filth/helpers';
+import { FilthExpr } from '@filth/types';
+// import { createLog } from '@helpers/log';
 import { parse as peggyParse } from './parser';
-import { FilthExpr } from './types';
 
-const log = createLog('filth/parse');
+// const log = createLog('filth/parse');
 
 // Wrapper around the Peggy parser that maintains the same interface
-export const parse = (input: string): FilthExpr => peggyParse(input, {});
+export const parse = (input: string): FilthExpr => peggyParse(input);
 
 export const parseLambdaParams = (params: FilthExpr): string[] => {
   if (!isFilthList(params)) {

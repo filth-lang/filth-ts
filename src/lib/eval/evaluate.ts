@@ -1,9 +1,9 @@
+import { type Environment } from '@filth/env/env';
+import { EvaluationError } from '@filth/error';
+import { evalList } from '@filth/eval/list/index';
+import { isFilthBasicValue, isFilthList, isFilthString } from '@filth/helpers';
+import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { type Environment } from '../environment';
-import { EvaluationError } from '../error';
-import { isFilthBasicValue, isFilthList, isFilthString } from '../helpers';
-import { FilthExpr } from '../types';
-import { evalList } from './list/index';
 
 const log = createLog('filth/eval');
 

@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'bun:test';
-import { createEnv, EvalEnvironment } from '../create';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createEnv, EvalEnvironment } from '../env/create';
 
 describe('Filth', () => {
   describe.skip('pattern matching', () => {

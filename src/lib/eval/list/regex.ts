@@ -1,8 +1,8 @@
-import { Environment } from '@filth/environment';
+import { Environment } from '@filth/env/env';
+import { evaluate } from '@filth/eval/evaluate';
+import { createFilthList, isFilthString } from '@filth/helpers';
 import { FilthExpr, FilthRegex } from '@filth/types';
 import { createLog } from '@helpers/log';
-import { createFilthList, isFilthString } from '../../helpers';
-import { evaluate } from '../evaluate';
 
 const log = createLog('eval/regex');
 

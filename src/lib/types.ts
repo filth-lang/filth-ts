@@ -1,4 +1,4 @@
-import { Environment } from './environment';
+import { Environment } from './env/env';
 
 // Base types
 export type FilthBasicValue = number | boolean | null;
@@ -51,7 +51,7 @@ export type FilthBuiltinFunction = (
 export type FilthFunction = {
   body: FilthExpr;
   env: Environment;
-  params: string[];
+  params: FilthExpr[];
   restParam?: string | null;
   type: 'function';
 };

@@ -20,7 +20,6 @@ export default defineConfig({
       '@filth': path.resolve(__dirname, './src/lib'),
       '@helpers': path.resolve(__dirname, './src/helpers'),
       '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@lib': path.resolve(__dirname, './src/lib'),
       '@model': path.resolve(__dirname, './src/model')
     }
   },

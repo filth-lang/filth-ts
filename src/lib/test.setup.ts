@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 
-import { createLog } from '@helpers/log';
+import 'vitest';
+
+import { expect } from 'vitest';
+
 import {
+  createFilthList,
   isFilthBasicValue,
   isFilthEnv,
   isFilthFunction,
@@ -9,19 +14,11 @@ import {
   isFilthRange,
   isFilthString,
   isFilthValue
-} from '@lib/helpers';
-import { FilthExpr, FilthFunction, FilthList, FilthRange } from '@lib/types';
-import { expect } from 'bun:test';
-import { createFilthList } from '../helpers';
+} from '@filth/helpers';
+import { FilthExpr, FilthFunction, FilthList, FilthRange } from '@filth/types';
+import { createLog } from '@helpers/log';
 
 const log = createLog('test');
-declare module 'bun:test' {
-  interface Matchers<T> {
-    envToContain(symbol: unknown, expected: unknown): T;
-    toEqualFilthList(expected: FilthList | FilthExpr[]): T;
-    toEqualFilthRange(expected: FilthRange): T;
-  }
-}
 
 const envToContain = (env: unknown, symbol: unknown, expected: unknown) => {
   if (!isFilthEnv(env)) {
@@ -33,6 +30,8 @@ const envToContain = (env: unknown, symbol: unknown, expected: unknown) => {
 
   if (!isFilthString(symbol)) {
     return {
+      actual: symbol,
+      expected: 'string',
       message: () => `expected ${symbol} to be a string`,
       pass: false
     };
@@ -188,3 +187,16 @@ expect.extend({
   toEqualFilthList,
   toEqualFilthRange
 });
+
+interface CustomMatchers<T = unknown> {
+  envToContain(symbol: unknown, expected: unknown): T;
+  toEqualFilthList(expected: FilthList | FilthExpr[]): T;
+  toEqualFilthRange(expected: FilthRange): T;
+}
+
+declare module 'vitest' {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
+}
