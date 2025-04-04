@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 
-import { type Environment } from '@filth/env/env';
+import { matchParams, type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
@@ -129,6 +129,20 @@ export const evalList = async (
         }
 
         return evaluatedA === evaluatedB;
+      }
+
+      case '~': {
+        const [a, b] = args;
+        // log.debug('[eval] ~', a, b);
+
+        if (!isFilthList(a) || !isFilthList(b)) {
+          throw new EvaluationError('~ requires two lists');
+        }
+
+        const result = matchParams(a.elements, b.elements);
+        // log.debug('[eval] ~ result', result);
+
+        return !!result;
       }
 
       case '..': {
