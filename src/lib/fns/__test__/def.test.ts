@@ -55,16 +55,16 @@ describe('Filth', () => {
     test('overloading def functions with args', async () => {
       const result = await env.eval(`
       
-        (def (arith mul x y) (* x y))
-        (def (arith add x y) (+ x y))
+        (def (arith "mul" x y) (* x y))
+        (def (arith "add" x y) (+ x y))
         
-        (arith mul 2 3)
+        (arith "mul" 2 3)
       `);
 
       expect(result).toEqual(6);
     });
 
-    test.skip('overloading def functions with regex args', async () => {
+    test('overloading def functions with regex args', async () => {
       const result = await env.eval(`
       
         (def (open /door/ ) "opened")
@@ -73,7 +73,22 @@ describe('Filth', () => {
         (open "window")
       `);
 
-      expect(result).toEqual('"it cannot be opened"');
+      expect(result).toEqual('"the window cannot be opened"');
+    });
+
+    it('should handle rest parameters in def', async () => {
+      const input = `
+      ; Function that takes rest parameters
+      (def (sum first ... rest)
+        (if (null? rest)
+            first
+            (+ first (sum rest))))
+
+      ; Sum numbers
+      (sum 1 2 3 4 5)
+      `;
+      const result = await env.eval(input);
+      expect(result).toBe(15);
     });
 
     it.skip('should perform json operations', async () => {

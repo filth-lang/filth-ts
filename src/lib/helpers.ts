@@ -171,6 +171,16 @@ export const checkRestParams = (params: FilthExpr[]) => {
   return { hasRest, parameters, restParam };
 };
 
+export const unwrapFilthList = (expr: FilthExpr | FilthExpr[]): FilthExpr[] => {
+  if (isFilthList(expr)) {
+    return expr.elements;
+  }
+  if (Array.isArray(expr)) {
+    return expr;
+  }
+  return [expr];
+};
+
 export const listExprToString = (expr: unknown): string => {
   if (isFilthValue(expr)) {
     return expr + '';

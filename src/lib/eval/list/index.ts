@@ -5,6 +5,7 @@ import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
 import {
+  createFilthList,
   isFilthBasicValue,
   isFilthFunction,
   isFilthJSON,
@@ -13,7 +14,8 @@ import {
   isFilthRange,
   isFilthRegex,
   isFilthString,
-  isTruthy
+  isTruthy,
+  unwrapFilthList
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -216,35 +218,34 @@ export const evalList = async (
           // );
 
           // bind regular parameters
-          // const evaluatedArgs = args;
+          const evaluatedArgs = await Promise.all(
+            args.map(async arg => await evaluate(env, arg))
+          );
 
-          log.debug('[evaluate] lambda params', fn.params, 'with args', args);
+          // log.debug('[evaluate] lambda params', fn.params, 'with args', args);
+          // log.debug(
+          //   '[evaluate] lambda params',
+          //   fn.params,
+          //   'with evaluatedArgs',
+          //   evaluatedArgs.flatMap(unwrapFilthList)
+          // );
 
-          const match = matchParams(fn.params, args);
-          log.debug('[evaluate] match', match);
+          const match = matchParams(
+            fn.params,
+            evaluatedArgs.flatMap(unwrapFilthList)
+          );
+          // log.debug('[evaluate] match', match);
 
           for (const [key, value] of Object.entries(match)) {
-            log.debug('[evaluate] lambda define', key, value);
-            newEnv.define(key, value);
+            // log.debug('[evaluate] lambda define', key, value);
+            if (Array.isArray(value)) {
+              newEnv.define(key, createFilthList(value));
+            } else {
+              newEnv.define(key, value);
+            }
           }
 
-          // for (let ii = 0; ii < fn.params.length; ii++) {
-          //   const param = fn.params[ii];
-          //   if (isFilthRegex(param)) {
-          //     extractCaptureGroupNames(param);
-          //   }
-          //   const arg = evaluatedArgs[ii];
-          //   newEnv.define(param as string, arg);
-          // }
-
-          // // handle rest parameter if present
-          // if (fn.restParam) {
-          //   const restArgs = evaluatedArgs.slice(fn.params.length);
-          //   newEnv.define(fn.restParam, {
-          //     elements: restArgs,
-          //     type: 'list'
-          //   });
-          // }
+          // log.debug('[evaluate] lambda body', listExprToString(fn.body));
 
           return evaluate(newEnv, fn.body);
         } else if (isFilthBasicValue(fn)) {

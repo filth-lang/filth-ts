@@ -5,6 +5,7 @@ import {
   isFilthList,
   isFilthNil,
   isFilthString,
+  listExprToString,
   removeQuotes
 } from '@filth/helpers';
 import { parse } from '@filth/parser/index';
@@ -52,6 +53,9 @@ export const createEnv = (): EvalEnvironment => {
   // Logging
   defineLogging(env);
 
+  // Conversions
+  defineConversions(env);
+
   return env;
 };
 
@@ -98,7 +102,7 @@ const defineArithmetic = (env: EvalEnvironment) => {
       if (b === null) {
         b = 'nil';
       }
-      log.debug('[defineArithmetic] a', a, 'b', b);
+      // log.debug('[defineArithmetic] a', a, 'b', b);
       return (a as number) + (b as number);
     });
     return typeof result === 'string' ? addQuotes(result) : result;
@@ -151,4 +155,21 @@ const defineListPredicates = (env: EvalEnvironment) => {
     }
     return 0;
   });
+};
+
+const defineConversions = (env: EvalEnvironment) => {
+  env.define('to_i', (x: FilthExpr) =>
+    isFilthString(x) ? Number.parseInt(removeQuotes(x), 10) : x
+  );
+  env.define('to_s', (...x: FilthExpr[]) =>
+    // log.debug('received', x);
+
+    addQuotes(x.map(listExprToString).map(removeQuotes).join(' '))
+  );
+  env.define('to_f', (x: FilthExpr) =>
+    isFilthString(x) ? Number.parseFloat(removeQuotes(x)) : x
+  );
+  env.define('to_b', (x: FilthExpr) =>
+    isFilthString(x) ? removeQuotes(x) === 'true' : x
+  );
 };

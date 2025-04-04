@@ -1,12 +1,7 @@
 import { Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
-import {
-  checkRestParams,
-  getFilthType,
-  isFilthList,
-  isFilthString
-} from '@filth/helpers';
+import { getFilthType, isFilthList, isFilthString } from '@filth/helpers';
 import { FilthExpr, FilthFunction } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -43,13 +38,16 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
   const fnName = nameOrList.elements[0];
   const params = nameOrList.elements.slice(1);
 
+  // log.debug('[define] fnName', fnName);
+  // log.debug('[define] params', params);
+
   if (!isFilthString(fnName)) {
     throw new EvaluationError(
       `Function name must be a symbol, received ${getFilthType(fnName)}`
     );
   }
 
-  const { hasRest, parameters, restParam } = checkRestParams(params);
+  // const { hasRest, parameters, restParam } = checkRestParams(params);
 
   // log.debug('[define] params', params);
   // log.debug('[define] hasRest', hasRest);
@@ -68,8 +66,8 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
             type: 'list'
           },
     env,
-    params: parameters,
-    restParam: hasRest ? restParam : null,
+    params,
+    restParam: null,
     type: 'function'
   };
 
