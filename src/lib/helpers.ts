@@ -109,6 +109,13 @@ export const removeQuotes = (expr: string) => {
   return expr;
 };
 
+export const addQuotes = (expr: string) => {
+  if (expr.startsWith('"') && expr.endsWith('"')) {
+    return expr;
+  }
+  return `"${expr}"`;
+};
+
 export const isFilthBuiltinFunction = (
   expr: unknown
 ): expr is FilthBuiltinFunction => typeof expr === 'function'; // && 'type' in expr && expr.type === 'builtin';

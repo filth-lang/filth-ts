@@ -1,6 +1,12 @@
 import { Environment } from '@filth/env/env';
 import { evaluate } from '@filth/eval/evaluate';
-import { isFilthList, isFilthNil, isFilthString } from '@filth/helpers';
+import {
+  addQuotes,
+  isFilthList,
+  isFilthNil,
+  isFilthString,
+  removeQuotes
+} from '@filth/helpers';
 import { parse } from '@filth/parser/index';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -78,9 +84,25 @@ const definePromises = (env: EvalEnvironment) => {
 };
 
 const defineArithmetic = (env: EvalEnvironment) => {
-  env.define('+', (...args: FilthExpr[]) =>
-    args.reduce((a, b) => (a as number) + (b as number), 0)
-  );
+  env.define('+', (...args: FilthExpr[]) => {
+    const result = args.reduce((a, b) => {
+      if (isFilthString(a)) {
+        a = removeQuotes(a);
+      }
+      if (isFilthString(b)) {
+        b = removeQuotes(b);
+      }
+      if (a === null) {
+        a = 'nil';
+      }
+      if (b === null) {
+        b = 'nil';
+      }
+      log.debug('[defineArithmetic] a', a, 'b', b);
+      return (a as number) + (b as number);
+    });
+    return typeof result === 'string' ? addQuotes(result) : result;
+  });
   env.define('-', (...args: FilthExpr[]) => {
     if (args.length === 0) {
       return 0;

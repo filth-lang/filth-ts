@@ -18,7 +18,7 @@ import {
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 
-import { doesFilthRegexMatch, extractCaptureGroupNames } from '../../fns/regex';
+import { doesFilthRegexMatch } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalJSON } from './json';
@@ -216,28 +216,35 @@ export const evalList = async (
           // );
 
           // bind regular parameters
-          const evaluatedArgs = args;
+          // const evaluatedArgs = args;
 
-          // TODO if an arg is a capture group regex, we need to extract the name
-          // log.debug('[evaluate] lambda params', fn.params, 'with args', args);
+          log.debug('[evaluate] lambda params', fn.params, 'with args', args);
 
-          for (let ii = 0; ii < fn.params.length; ii++) {
-            const param = fn.params[ii];
-            if (isFilthRegex(param)) {
-              extractCaptureGroupNames(param);
-            }
-            const arg = evaluatedArgs[ii];
-            newEnv.define(param as string, arg);
+          const match = matchParams(fn.params, args);
+          log.debug('[evaluate] match', match);
+
+          for (const [key, value] of Object.entries(match)) {
+            log.debug('[evaluate] lambda define', key, value);
+            newEnv.define(key, value);
           }
 
-          // handle rest parameter if present
-          if (fn.restParam) {
-            const restArgs = evaluatedArgs.slice(fn.params.length);
-            newEnv.define(fn.restParam, {
-              elements: restArgs,
-              type: 'list'
-            });
-          }
+          // for (let ii = 0; ii < fn.params.length; ii++) {
+          //   const param = fn.params[ii];
+          //   if (isFilthRegex(param)) {
+          //     extractCaptureGroupNames(param);
+          //   }
+          //   const arg = evaluatedArgs[ii];
+          //   newEnv.define(param as string, arg);
+          // }
+
+          // // handle rest parameter if present
+          // if (fn.restParam) {
+          //   const restArgs = evaluatedArgs.slice(fn.params.length);
+          //   newEnv.define(fn.restParam, {
+          //     elements: restArgs,
+          //     type: 'list'
+          //   });
+          // }
 
           return evaluate(newEnv, fn.body);
         } else if (isFilthBasicValue(fn)) {

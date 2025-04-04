@@ -60,9 +60,9 @@ describe('Filth', () => {
         [`(/door/)`, `("door")`, {}],
         [`(/\\d+/ a b)`, `("15" 2 3)`, { a: 2, b: 3 }],
         [`(/\\d+/ a b)`, `("fifteen" 2 3)`, false],
-        [`( /(?<val>door|window)/ )`, `("door")`, { val: 'door' }],
-        [`( /(?<val>door|window)/ )`, `("door window")`, { val: 'door' }],
-        [`( /(?<val>door|window)/ )`, `("window")`, { val: 'window' }],
+        [`( /(?<val>door|window)/ )`, `("door")`, { val: '"door"' }],
+        [`( /(?<val>door|window)/ )`, `("door window")`, { val: '"door"' }],
+        [`( /(?<val>door|window)/ )`, `("window")`, { val: '"window"' }],
         [`( /(?<val>door|window)/ )`, `("chest")`, false],
         [`( 0..5 )`, `(1)`, {}],
         [`( 0..5 )`, `(6)`, false],
@@ -70,7 +70,7 @@ describe('Filth', () => {
         [
           `( first ... /(?<val>door|window)/ )`,
           `(open door chest bottle window)`,
-          { first: 'open', val: ['door', 'window'] }
+          { first: 'open', val: ['"door"', '"window"'] }
         ],
         [`( head ... 0..5 )`, `(1 3 5 7 9)`, { ':tail': [3, 5], head: 1 }],
         [`( head ... 0..5 )`, `(1)`, { ':tail': [], head: 1 }]

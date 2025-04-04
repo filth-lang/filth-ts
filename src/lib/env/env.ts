@@ -1,5 +1,6 @@
 import { EvaluationError, UndefinedSymbolError } from '@filth/error';
 import {
+  addQuotes,
   isFilthFunction,
   isFilthQuotedString,
   isFilthRange,
@@ -207,9 +208,9 @@ export const matchParam = (
             if (!Array.isArray(existing)) {
               existing = [existing];
             }
-            result[name] = [...existing, value];
+            result[name] = [...existing, addQuotes(value)];
           } else {
-            result[name] = value;
+            result[name] = addQuotes(value);
           }
         }
 
