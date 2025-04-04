@@ -118,31 +118,38 @@ export const findBinding = (
   }
 };
 
-const compareParams = (params: FilthExpr[], args: FilthExpr[]) => {
+export const compareParams = (params: FilthExpr[], args: FilthExpr[]) => {
   if (params.length !== args.length) {
+    // log.debug('[compareParams] params and args length mismatch', params, args);
     return false;
   }
   for (let ii = 0; ii < params.length; ii++) {
-    const param = params[ii];
-    const arg = args[ii];
-    if (isFilthQuotedString(param)) {
-      if (param === arg) {
-        return true;
-      }
+    if (!compareParam(params[ii], args[ii])) {
+      return false;
     }
-    if (isFilthRegex(param) && isFilthString(arg)) {
-      if (param.regex.test(arg)) {
-        return true;
-      }
-    }
-    if (typeof param === typeof arg && param === arg) {
+  }
+
+  // log.debug('[compareParams] no match', params, args);
+  return true;
+};
+
+export const compareParam = (param: FilthExpr, arg: FilthExpr) => {
+  if (isFilthQuotedString(param)) {
+    return param === arg;
+  }
+  if (isFilthRegex(param) && isFilthString(arg)) {
+    // log.debug('[compareParam] regex', param, arg, param.regex.test(arg));
+    if (param.regex.test(arg)) {
       return true;
     }
-    // if (isFilthFunction(param)) {
-    //   if (!compareParams(param.params, arg)) {
-    //     return false;
-    //   }
-    // }
   }
+  if (typeof param === typeof arg && param === arg) {
+    return true;
+  }
+
+  if (typeof param === 'string') {
+    return true;
+  }
+
   return false;
 };
