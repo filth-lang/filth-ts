@@ -32,3 +32,41 @@ export const extractCaptureGroupNames = (regex: FilthRegex): string[] => {
 
   return names;
 };
+
+export const matchRegex = (regex: RegExp, str: string): string[] | null => {
+  if (regex.global) {
+    const matches = str.matchAll(regex);
+    return Array.from(matches).map(match => match[0]);
+  }
+
+  const match = str.match(regex);
+  return match ? [match[0]] : null;
+};
+
+export const matchRegexWithNamedGroups = (
+  regex: RegExp,
+  str: string
+): Record<string, string> | null => {
+  if (!regex.global) {
+    const match = str.match(regex);
+    if (!match) {
+      return null;
+    }
+    return match.groups ?? null;
+  }
+
+  const match = str.match(regex);
+  if (!match) {
+    return null;
+  }
+
+  const result: Record<string, string> = {};
+
+  for (let ii = 0; ii < match.length; ii++) {
+    const name = regex.lastIndex;
+    const value = match[ii];
+    result[name] = value;
+  }
+
+  return result;
+};

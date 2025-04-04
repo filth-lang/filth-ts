@@ -17,6 +17,7 @@ import {
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
+
 import { doesFilthRegexMatch, extractCaptureGroupNames } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
@@ -170,7 +171,7 @@ export const evalList = async (
         return evalLet(env, args);
 
       default:
-        log.debug('[evaluate] operator', operator, args);
+        // log.debug('[evaluate] operator', operator, args);
         // log.debug('[evaluate] bindings', Array.from(env.getBindings().keys()));
         // For non-special forms, evaluate the operator and apply it
         const { options, value: fn } = env.lookup(operator, args);
@@ -204,7 +205,7 @@ export const evalList = async (
           const evaluatedArgs = args;
 
           // TODO if an arg is a capture group regex, we need to extract the name
-          log.debug('[evaluate] lambda params', fn.params, 'with args', args);
+          // log.debug('[evaluate] lambda params', fn.params, 'with args', args);
 
           for (let ii = 0; ii < fn.params.length; ii++) {
             const param = fn.params[ii];

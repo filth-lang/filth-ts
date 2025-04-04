@@ -1,12 +1,16 @@
-import { UndefinedSymbolError } from '@filth/error';
+import { EvaluationError, UndefinedSymbolError } from '@filth/error';
 import {
   isFilthFunction,
   isFilthQuotedString,
+  isFilthRange,
   isFilthRegex,
   isFilthString
 } from '@filth/helpers';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
+
+import { isFilthRangeIn } from '../fns/range';
+import { matchRegexWithNamedGroups } from '../fns/regex';
 
 const log = createLog('environment');
 
@@ -109,7 +113,7 @@ export const findBinding = (
 
   for (const binding of bindings) {
     if (isFilthFunction(binding.value)) {
-      const result = compareParams(binding.value.params, args);
+      const result = matchParams(binding.value.params, args);
       // log.debug('[findBinding] comparing', binding.value.params, args, result);
       if (result) {
         return binding;
@@ -118,36 +122,111 @@ export const findBinding = (
   }
 };
 
-export const compareParams = (params: FilthExpr[], args: FilthExpr[]) => {
-  if (params.length !== args.length) {
-    // log.debug('[compareParams] params and args length mismatch', params, args);
+export const matchParams = (
+  params: FilthExpr[],
+  args: FilthExpr[]
+): Record<string, FilthExpr | FilthExpr[]> | false => {
+  const hasRest = params.includes('...');
+  if (!hasRest && params.length !== args.length) {
+    // log.debug('[matchParams] params and args length mismatch', params, args);
     return false;
   }
+
+  const result: Record<string, FilthExpr> = {};
+
   for (let ii = 0; ii < params.length; ii++) {
-    if (!compareParam(params[ii], args[ii])) {
+    const param = params[ii];
+
+    if (param === '...') {
+      // log.debug('[matchParams] param is .', params, args);
+
+      const rest: FilthExpr[] = [];
+      const restParam = params[ii + 1];
+      if (!restParam) {
+        throw new EvaluationError('Expected rest parameter after ...');
+      }
+
+      const restArgs = args.slice(ii);
+      const restMap: Record<string, FilthExpr> = {};
+      for (const arg of restArgs) {
+        // log.debug('[matchParams] rest arg', restParam, arg);
+        if (matchParam(restMap, restParam, arg, true)) {
+          rest.push(arg);
+        }
+        // log.debug('[matchParams] rest map', restMap);
+      }
+
+      const restKey = typeof restParam === 'string' ? restParam : ':tail';
+
+      if (Object.keys(restMap).length > 0) {
+        return {
+          ...result,
+          ...restMap
+        };
+      }
+      return {
+        ...result,
+        [restKey]: rest
+      };
+    }
+
+    if (!matchParam(result, params[ii], args[ii])) {
       return false;
     }
   }
 
-  // log.debug('[compareParams] no match', params, args);
-  return true;
+  // log.debug('[matchParams] no match', params, args);
+  return result;
 };
 
-export const compareParam = (param: FilthExpr, arg: FilthExpr) => {
+export const matchParam = (
+  result: Record<string, FilthExpr | FilthExpr[]>,
+  param: FilthExpr,
+  arg: FilthExpr,
+  dontAddToResult: boolean = false
+) => {
   if (isFilthQuotedString(param)) {
     return param === arg;
   }
-  if (isFilthRegex(param) && isFilthString(arg)) {
-    // log.debug('[compareParam] regex', param, arg, param.regex.test(arg));
-    if (param.regex.test(arg)) {
-      return true;
-    }
+  if (isFilthRange(param)) {
+    return isFilthRangeIn(param, arg);
+
+    // return param.start <= arg && arg <= param.end;
   }
-  if (typeof param === typeof arg && param === arg) {
-    return true;
+  if (isFilthRegex(param) && isFilthString(arg)) {
+    if (!param.hasNamedGroups) {
+      if (param.regex.test(arg)) {
+        return true;
+      }
+    } else {
+      const matches = matchRegexWithNamedGroups(param.regex, arg);
+      if (matches) {
+        for (const [name, value] of Object.entries(matches)) {
+          let existing: FilthExpr | FilthExpr[] | undefined = result[name];
+          if (existing) {
+            if (!Array.isArray(existing)) {
+              existing = [existing];
+            }
+            result[name] = [...existing, value];
+          } else {
+            result[name] = value;
+          }
+        }
+
+        return true;
+      }
+    }
   }
 
   if (typeof param === 'string') {
+    if (!dontAddToResult) {
+      result[param] = arg;
+    }
+    return true;
+  }
+
+  if (typeof param === typeof arg && param === arg) {
+    // result[param] = arg;
     return true;
   }
 

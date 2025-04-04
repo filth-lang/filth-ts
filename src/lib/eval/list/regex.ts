@@ -1,5 +1,6 @@
 import { Environment } from '@filth/env/env';
 import { evaluate } from '@filth/eval/evaluate';
+import { matchRegex } from '@filth/fns/regex';
 import { createFilthList, isFilthString } from '@filth/helpers';
 import { FilthExpr, FilthRegex } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -17,10 +18,10 @@ export const evalRegex = async (
 
   // log.debug('[eval] regex', expr, evaluatedArgs);
 
-  const result: FilthExpr[] = [];
+  let result: FilthExpr[] = [];
 
   if (expr.hasNamedGroups) {
-    const newEnv = env.create();
+    // const newEnv = env.create();
 
     for (const arg of evaluatedArgs) {
       if (isFilthString(arg)) {
@@ -46,7 +47,8 @@ export const evalRegex = async (
       const matches = matchRegex(expr.regex, arg);
       // log.debug('[eval] regex arg:', arg, expr.regex, matches);
       if (matches) {
-        result.push(matches as unknown as FilthExpr);
+        result = [...result, ...matches];
+        // result.push(matches as unknown as FilthExpr);
       }
     }
   }
@@ -54,14 +56,4 @@ export const evalRegex = async (
   // log.debug('[eval] regex result', result.flat());
 
   return createFilthList(result.flat());
-};
-
-const matchRegex = (regex: RegExp, str: string) => {
-  if (regex.global) {
-    const matches = str.matchAll(regex);
-    return Array.from(matches).map(match => match[0]);
-  }
-
-  const match = str.match(regex);
-  return match ? match[0] : null;
 };
