@@ -22,7 +22,6 @@
     "build:site": "bunx --bun vite build --config vite.site.config.ts",
     "build:grammar": "bun scripts/generate_parser.ts",
     "watch:grammar": "bun scripts/generate_parser.ts --watch",
-    "lint:format": "prettier --cache --check .",
     "preview": "bunx --bun vite preview",
     "outdated": "bunx npm-check-updates --interactive --format group",
     "tsc": "tsc --noEmit",

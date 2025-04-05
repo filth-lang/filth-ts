@@ -20,4 +20,4 @@ const headedParser =
   `/* eslint-disable unicorn/no-abusive-eslint-disable */\n` + parser;
 
 // save to file
-fs.writeFileSync('src/lib/parser.ts', headedParser);
+fs.writeFileSync('src/lib/parser/parser.ts', headedParser);

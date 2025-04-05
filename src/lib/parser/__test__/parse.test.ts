@@ -1,7 +1,13 @@
 import { describe, expect, it, test } from 'vitest';
+
+import { exprToJson } from '@filth/__test__/helpers';
+import { ParseError } from '@filth/error';
+import { FilthJSON, FilthRange, FilthRegex } from '@filth/types';
+import { createLog } from '@helpers/log';
+
 import { parse } from '..';
-import { exprToJson } from '../../__test__/helpers';
-import { FilthJSON, FilthRange, FilthRegex } from '../../types';
+
+const log = createLog('filth:parser:test');
 
 describe('Filth', () => {
   describe('Parser', () => {
@@ -116,7 +122,7 @@ describe('Filth', () => {
           { json: ['one', 'two', 3, 4], type: 'json' }
         ],
         [
-          `{ values: [ { "state": "open" }, { "state": "closed" } ] }`,
+          `{ values: [ { state: "open" }, { state: "closed" } ] }`,
           {
             json: { values: [{ state: 'open' }, { state: 'closed' }] },
             type: 'json'
@@ -125,11 +131,25 @@ describe('Filth', () => {
         [
           '{"name": "John", "age": 30}',
           { json: { age: 30, name: 'John' }, type: 'json' }
+        ],
+        [
+          `{
+          full-name: "John", age: 30
+          }`,
+          { json: { age: 30, 'full-name': 'John' }, type: 'json' }
         ]
       ])('should handle JSON %s', (input, expected) => {
         const result = parse(input);
         expect(result).toEqual(expected as unknown as FilthJSON);
       });
+    });
+
+    test('it should fail to parse invalid JSON', () => {
+      expect(() =>
+        parse(`{
+        full name: "John", age: 30
+        }`)
+      ).toThrow(new ParseError('Expected ":" or whitespace but "n" found.'));
     });
   });
 });

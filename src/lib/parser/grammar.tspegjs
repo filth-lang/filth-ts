@@ -138,7 +138,7 @@ String
 
 // Symbols
 Symbol
-  = chars:[^() \n;]+ { return chars.join("") }
+  = chars:[^(){}\[\] \n;]+ { return chars.join("") }
 
 // Comments
 Comment
@@ -177,7 +177,7 @@ JSONPair
   }
 
 JSONKey
-  = first:[a-zA-Z_] rest:[a-zA-Z0-9_]* { return first + rest.join("") }
+  = first:[a-zA-Z_] rest:[a-zA-Z0-9_-]* { return first + rest.join("") }
 
 
 ws "json_whitespace" = [ \t\n\r]*

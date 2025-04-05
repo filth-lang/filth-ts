@@ -338,12 +338,12 @@ function peg$parse(input, options) {
   var peg$r3 = /^[+\-]/;
   var peg$r4 = /^[^\n"]/;
   var peg$r5 = /^[\n ]/;
-  var peg$r6 = /^[^() \n;]/;
+  var peg$r6 = /^[^(){}[\] \n;]/;
   var peg$r7 = /^[^\n]/;
   var peg$r8 = /^[^\/]/;
   var peg$r9 = /^[ig]/;
   var peg$r10 = /^[a-zA-Z_]/;
-  var peg$r11 = /^[a-zA-Z0-9_]/;
+  var peg$r11 = /^[a-zA-Z0-9_\-]/;
   var peg$r12 = /^["\/\\]/;
   var peg$r13 = /^[^\0-\x1F"\\]/;
   var peg$r14 = /^[0-9]/;
@@ -369,7 +369,7 @@ function peg$parse(input, options) {
   var peg$e17 = peg$literalExpectation("\"", false);
   var peg$e18 = peg$classExpectation(["\n", "\""], true, false);
   var peg$e19 = peg$classExpectation(["\n", " "], false, false);
-  var peg$e20 = peg$classExpectation(["(", ")", " ", "\n", ";"], true, false);
+  var peg$e20 = peg$classExpectation(["(", ")", "{", "}", "[", "]", " ", "\n", ";"], true, false);
   var peg$e21 = peg$literalExpectation(";", false);
   var peg$e22 = peg$classExpectation(["\n"], true, false);
   var peg$e23 = peg$literalExpectation("/", false);
@@ -380,7 +380,7 @@ function peg$parse(input, options) {
   var peg$e28 = peg$literalExpectation("}", false);
   var peg$e29 = peg$literalExpectation(":", false);
   var peg$e30 = peg$classExpectation([["a", "z"], ["A", "Z"], "_"], false, false);
-  var peg$e31 = peg$classExpectation([["a", "z"], ["A", "Z"], ["0", "9"], "_"], false, false);
+  var peg$e31 = peg$classExpectation([["a", "z"], ["A", "Z"], ["0", "9"], "_", "-"], false, false);
   var peg$e32 = peg$otherExpectation("json_whitespace");
   var peg$e33 = peg$literalExpectation("[", false);
   var peg$e34 = peg$literalExpectation("]", false);
