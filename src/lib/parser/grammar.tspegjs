@@ -138,7 +138,7 @@ String
 
 // Symbols
 Symbol
-  = chars:[^(){}\[\] \n;]+ { return chars.join("") }
+  = chars:[^(){}\[\], \n;]+ { return chars.join("") }
 
 // Comments
 Comment
@@ -179,12 +179,6 @@ JSONPair
 JSONKey
   = first:[a-zA-Z_] rest:[a-zA-Z0-9_-]* { return first + rest.join("") }
 
-
-ws "json_whitespace" = [ \t\n\r]*
-begin_array     = ws "[" ws
-end_array       = ws "]" ws
-value_separator = ws "," ws
-
 JSONArray
   = value:NestedJSONArray
     { return makeJSON(value); }
@@ -197,6 +191,7 @@ JSONValue
   / "true" { return true }
   / "false" { return false }
   / "null" { return null }
+  / Symbol
   
 
 NestedJSONObject
@@ -214,14 +209,14 @@ NestedJSONObject
   }
 
 NestedJSONArray
-  = begin_array
-    values:(
-      head:JSONValue
-      tail:(value_separator v:JSONValue { return v; })*
-      { return [head].concat(tail); }
-    )?
-    end_array
-    { return values !== null ? values : []; }
+  = "[" _ values:(JSONValue (_ "," _ JSONValue)*)? _ "]" {
+      if (!values) return [];
+      const result = [values[0]]; // head element
+      if (values[1]) {
+         values[1].forEach(match => result.push(match[3])); // tail elements (index 3 is the JSONValue)
+      }
+      return result;
+    }
 
 JSONString
   = quotation_mark chars:JSONChar* quotation_mark { return chars.join(""); }

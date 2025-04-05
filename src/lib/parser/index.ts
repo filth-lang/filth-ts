@@ -12,8 +12,6 @@ export const parse = (input: string): FilthExpr => {
   try {
     return peggyParse(input) as FilthExpr;
   } catch (error) {
-    // log.debug('error', error);
-
     if (error instanceof PeggySyntaxError) {
       const { expected, location, message } = error;
 

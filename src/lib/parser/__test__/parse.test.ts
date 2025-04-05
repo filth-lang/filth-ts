@@ -116,7 +116,7 @@ describe('Filth', () => {
           `[ 1, 2, "three", null, true, true, false ]`,
           { json: [1, 2, 'three', null, true, true, false], type: 'json' }
         ],
-        [`[ "hello", "world" ]`, { json: ['hello', 'world'], type: 'json' }],
+        [`[ hello, world ]`, { json: ['hello', 'world'], type: 'json' }],
         [
           `[ "one", "two", 3, 4 ]`,
           { json: ['one', 'two', 3, 4], type: 'json' }
@@ -129,7 +129,7 @@ describe('Filth', () => {
           }
         ],
         [
-          '{"name": "John", "age": 30}',
+          '{name: "John", "age": 30}',
           { json: { age: 30, name: 'John' }, type: 'json' }
         ],
         [
