@@ -35,8 +35,11 @@ describe('Filth', () => {
       await env.eval(`
 
 
-        (get {"lang": "filth"} "lang")
+        (get { lang: filth} "lang")
         ; "filth"
+
+        (update { lang: typescript} "lang" "filth")
+        ; { lang: "filth" }
         
         dehydrate { "state": "open" }
         ; ( "/state" "open" )

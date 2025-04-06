@@ -113,7 +113,7 @@ describe('Filth', () => {
         [`[]`, { json: [], type: 'json' }],
         [`[null, null, null]`, { json: [null, null, null], type: 'json' }],
         [
-          `[ 1, 2, "three", null, true, true, false ]`,
+          `[ 1, 2, three, null, true, true, false ]`,
           { json: [1, 2, 'three', null, true, true, false], type: 'json' }
         ],
         [`[ hello, world ]`, { json: ['hello', 'world'], type: 'json' }],
@@ -122,7 +122,7 @@ describe('Filth', () => {
           { json: ['one', 'two', 3, 4], type: 'json' }
         ],
         [
-          `{ values: [ { state: "open" }, { state: "closed" } ] }`,
+          `{ values: [ { state: open }, { state: "closed" } ] }`,
           {
             json: { values: [{ state: 'open' }, { state: 'closed' }] },
             type: 'json'

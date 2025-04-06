@@ -24,7 +24,7 @@ export const evalDefine = async (env: Environment, args: FilthExpr[]) => {
     }
     if (body.length !== 1) {
       throw new EvaluationError(
-        `Define expects exactly one value, received ${body.length}`
+        `def expects exactly one value, received ${body.length}`
       );
     }
 
