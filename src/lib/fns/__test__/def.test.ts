@@ -97,6 +97,11 @@ describe('Filth', () => {
       expect(result).toBe(2);
     });
 
+    it('one shot def fn', async () => {
+      const result = await env.eval(`(def (foo x) (+ x 2)) (foo 2)`);
+      expect(result).toBe(4);
+    });
+
     it.skip('should perform json operations', async () => {
       await env.eval(`
 

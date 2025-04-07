@@ -37,6 +37,16 @@ export const evalList = async (
 ): Promise<FilthExpr> => {
   const [operator, ...args] = expr.elements;
 
+  // log.debug('operator', listExprToString(operator));
+
+  if (isFilthList(operator)) {
+    let result: FilthExpr | null = null;
+    for (const e of expr.elements) {
+      result = await evaluate(env, e);
+    }
+    return result;
+  }
+
   // Handle multiple top-level expressions by treating them as a begin expression
   // if (expr.elements.length > 0 && !isFilthString(expr.elements[0])) {
   //   // log.debug('[evaluate] begin', expr);
@@ -47,7 +57,7 @@ export const evalList = async (
   //   return result;
   // }
 
-  // log.debug('[evaluate] operator', operator, args);
+  // log.debug('operator', listExprToString(expr));
 
   if (!operator) {
     return null;

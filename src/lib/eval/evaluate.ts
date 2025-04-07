@@ -17,6 +17,8 @@ export const evaluate = async (
   env: Environment,
   expr: FilthExpr
 ): Promise<FilthExpr> => {
+  // log.debug('[evaluate]', listExprToString(expr));
+
   if (isFilthBasicValue(expr)) {
     // a number, boolean, or null
     return expr;
@@ -39,8 +41,6 @@ export const evaluate = async (
     return value;
   }
 
-  // log.debug('[evaluate]', expr);
-
   if ('type' in expr) {
     if (expr.type === 'quoted') {
       if (isFilthList(expr.expr)) {
@@ -56,7 +56,7 @@ export const evaluate = async (
     }
 
     if (expr.type === 'list') {
-      // log.debug('[evaluate] list', expr);
+      // log.debug('[evaluate] list', listExprToString(expr));
       return evalList(env, expr);
     }
 
