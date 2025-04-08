@@ -2,7 +2,7 @@ import { describe, expect, it, test } from 'vitest';
 
 import { exprToJson } from '@filth/__test__/helpers';
 import { ParseError } from '@filth/error';
-import { FilthJSON, FilthRange, FilthRegex } from '@filth/types';
+import { FilthJSON, FilthPointer, FilthRange, FilthRegex } from '@filth/types';
 import { createLog } from '@helpers/log';
 
 import { parse } from '..';
@@ -142,14 +142,24 @@ describe('Filth', () => {
         const result = parse(input);
         expect(result).toEqual(expected as unknown as FilthJSON);
       });
+      test('it should fail to parse invalid JSON', () => {
+        expect(() =>
+          parse(`{
+          full name: "John", age: 30
+          }`)
+        ).toThrow(new ParseError('Expected ":" or whitespace but "n" found.'));
+      });
     });
 
-    test('it should fail to parse invalid JSON', () => {
-      expect(() =>
-        parse(`{
-        full name: "John", age: 30
-        }`)
-      ).toThrow(new ParseError('Expected ":" or whitespace but "n" found.'));
+    describe('Pointer', () => {
+      test.each([
+        ['//path/to/key', { path: '/path/to/key', type: 'pointer' }],
+        ['//path', { path: '/path', type: 'pointer' }],
+        ['//1', { path: '/1', type: 'pointer' }],
+        ['//1/two/0', { path: '/1/two/0', type: 'pointer' }]
+      ])('should handle pointer %s', (input, expected) => {
+        expect(parse(input)).toEqual(expected as FilthPointer);
+      });
     });
   });
 });

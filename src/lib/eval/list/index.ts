@@ -28,6 +28,7 @@ import { evalLambda } from './lambda';
 import { evalLet } from './let';
 import { evalRange } from './range';
 import { evalRegex } from './regex';
+import { evalSelect } from './select';
 
 const log = createLog('eval/list');
 
@@ -37,7 +38,7 @@ export const evalList = async (
 ): Promise<FilthExpr> => {
   const [operator, ...args] = expr.elements;
 
-  // log.debug('operator', listExprToString(operator));
+  // log.debug('operator', exprToString(operator));
 
   if (isFilthList(operator)) {
     let result: FilthExpr | null = null;
@@ -57,7 +58,7 @@ export const evalList = async (
   //   return result;
   // }
 
-  // log.debug('operator', listExprToString(expr));
+  // log.debug('operator', exprToString(expr));
 
   if (!operator) {
     return null;
@@ -127,6 +128,8 @@ export const evalList = async (
       case 'lambda':
         return evalLambda(env, args);
 
+      case 'select':
+        return evalSelect(env, args);
       case '=': {
         const [a, b] = args;
         const evaluatedA = await evaluate(env, a);
@@ -255,7 +258,7 @@ export const evalList = async (
             }
           }
 
-          // log.debug('[evaluate] lambda body', listExprToString(fn.body));
+          // log.debug('[evaluate] lambda body', exprToString(fn.body));
 
           return evaluate(newEnv, fn.body);
         } else if (isFilthBasicValue(fn)) {

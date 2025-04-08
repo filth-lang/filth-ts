@@ -4,6 +4,10 @@ import { Environment } from './env/env';
 export type FilthBasicValue = number | boolean | null;
 export type FilthValue = number | string | boolean | null;
 
+export type FilthObject = {
+  type: 'list' | 'function' | 'quoted' | 'range' | 'regex' | 'json' | 'pointer';
+};
+
 // List types
 export type FilthList = {
   elements: FilthExpr[];
@@ -56,6 +60,11 @@ export type FilthFunction = {
   type: 'function';
 };
 
+export type FilthPointer = {
+  path: string;
+  type: 'pointer';
+};
+
 // Combined expression type
 export type FilthExpr =
   | FilthValue
@@ -66,4 +75,7 @@ export type FilthExpr =
   | FilthJSON
   | FilthNil
   | FilthQuotedExpr
-  | FilthFunction;
+  | FilthFunction
+  | FilthJSONArray
+  | FilthJSONObject
+  | FilthPointer;

@@ -10,6 +10,8 @@ import {
   FilthJSONObject,
   FilthList,
   FilthNil,
+  FilthObject,
+  FilthPointer,
   FilthQuotedExpr,
   FilthRange,
   FilthRegex,
@@ -49,41 +51,29 @@ export const isFilthNil = (expr: unknown): expr is FilthNil =>
   expr === undefined ||
   (typeof expr === 'object' && 'type' in expr && expr.type === 'nil');
 
+const isFilthObject = (expr: unknown): expr is FilthObject =>
+  expr !== null && typeof expr === 'object' && 'type' in expr;
+
 export const isFilthList = (expr: unknown): expr is FilthList =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'list';
+  isFilthObject(expr) && expr.type === 'list';
 
 export const isFilthFunction = (expr: unknown): expr is FilthFunction =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'function';
+  isFilthObject(expr) && expr.type === 'function';
 
 export const isFilthQuotedExpr = (expr: unknown): expr is FilthQuotedExpr =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'quoted';
+  isFilthObject(expr) && expr.type === 'quoted';
 
 export const isFilthRange = (expr: unknown): expr is FilthRange =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'range';
+  isFilthObject(expr) && expr.type === 'range';
 
 export const isFilthRegex = (expr: unknown): expr is FilthRegex =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'regex';
+  isFilthObject(expr) && expr.type === 'regex';
 
 export const isFilthJSON = (expr: unknown): expr is FilthJSON =>
-  expr !== null &&
-  typeof expr === 'object' &&
-  'type' in expr &&
-  expr.type === 'json';
+  isFilthObject(expr) && expr.type === 'json';
+
+export const isFilthPointer = (expr: unknown): expr is FilthPointer =>
+  isFilthObject(expr) && expr.type === 'pointer';
 
 export const isFilthJSONObject = (expr: unknown): expr is FilthJSONObject =>
   expr !== null && typeof expr === 'object';
@@ -127,7 +117,8 @@ export const isFilthExpr = (expr: unknown): expr is FilthExpr =>
   isFilthBuiltinFunction(expr) ||
   isFilthFunction(expr) ||
   isFilthQuotedExpr(expr) ||
-  isFilthRange(expr);
+  isFilthRange(expr) ||
+  isFilthPointer(expr);
 
 export const isTruthy = (
   value: null | false | undefined | string | FilthExpr
@@ -173,7 +164,10 @@ export const checkRestParams = (params: FilthExpr[]) => {
 
 export const unwrapFilthList = (expr: FilthExpr | FilthExpr[]): FilthExpr[] => {
   if (isFilthList(expr)) {
-    return expr.elements;
+    return expr.elements.flatMap(unwrapFilthList);
+  }
+  if (isFilthJSON(expr)) {
+    return [expr.json];
   }
   if (Array.isArray(expr)) {
     return expr;
@@ -181,7 +175,7 @@ export const unwrapFilthList = (expr: FilthExpr | FilthExpr[]): FilthExpr[] => {
   return [expr];
 };
 
-export const listExprToString = (expr: unknown): string => {
+export const exprToString = (expr: unknown): string => {
   if (isFilthValue(expr)) {
     return expr + '';
   }
@@ -189,16 +183,16 @@ export const listExprToString = (expr: unknown): string => {
     return 'nil';
   }
   if (isFilthList(expr)) {
-    return `( ${expr.elements.map(listExprToString).join(' ')} )`;
+    return `( ${expr.elements.map(exprToString).join(' ')} )`;
   }
   if (isFilthFunction(expr)) {
-    return `( lambda (${expr.params.map(param => param).join(' ')}) ${listExprToString(expr.body)} )`;
+    return `( lambda (${expr.params.map(param => param).join(' ')}) ${exprToString(expr.body)} )`;
   }
   if (isFilthBuiltinFunction(expr)) {
     return `#<builtin ${expr.name}>`;
   }
   if (isFilthQuotedExpr(expr)) {
-    return `'${listExprToString(expr.expr)}`;
+    return `'${exprToString(expr.expr)}`;
   }
   if (isFilthRange(expr)) {
     return `${expr.elements.join('..')}${expr.step ? `//${expr.step}` : ''}`;

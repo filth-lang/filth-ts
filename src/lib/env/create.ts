@@ -2,10 +2,10 @@ import { Environment } from '@filth/env/env';
 import { evaluate } from '@filth/eval/evaluate';
 import {
   addQuotes,
+  exprToString,
   isFilthList,
   isFilthNil,
   isFilthString,
-  listExprToString,
   removeQuotes
 } from '@filth/helpers';
 import { parse } from '@filth/parser/index';
@@ -164,7 +164,7 @@ const defineConversions = (env: EvalEnvironment) => {
   env.define('to_s', (...x: FilthExpr[]) =>
     // log.debug('received', x);
 
-    addQuotes(x.map(listExprToString).map(removeQuotes).join(' '))
+    addQuotes(x.map(exprToString).map(removeQuotes).join(' '))
   );
   env.define('to_f', (x: FilthExpr) =>
     isFilthString(x) ? Number.parseFloat(removeQuotes(x)) : x

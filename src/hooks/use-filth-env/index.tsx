@@ -1,19 +1,20 @@
+import { useSetAtom } from 'jotai';
+import { useCallback, useEffect, useRef } from 'preact/hooks';
+import SJSON from 'superjson';
+
 import { createEnv, EvalEnvironment } from '@filth/env/create';
 import { FilthArgumentError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import {
+  exprToString,
   isFilthBuiltinFunction,
   isFilthExpr,
-  isFilthFunction,
-  listExprToString
+  isFilthFunction
 } from '@filth/helpers';
 import { FilthExpr, FilthFunction, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 import { addLogMessageAtom, addMessageAtom } from '@model/atoms';
 import { Message } from '@model/types';
-import { useSetAtom } from 'jotai';
-import { useCallback, useEffect, useRef } from 'preact/hooks';
-import SJSON from 'superjson';
 
 const log = createLog('useFilthEnv');
 
@@ -46,7 +47,7 @@ export const useFilthEnv = () => {
       addLogMessage('@bindings:');
       log.debug('@bindings:', env.current.getBindings());
       for (const [key, value] of env.current.getBindings().entries()) {
-        addLogMessage(`${key} = ${listExprToString(value)}`);
+        addLogMessage(`${key} = ${exprToString(value)}`);
       }
       return null;
     });
@@ -91,16 +92,16 @@ export const useFilthEnv = () => {
 
       if (isFilthFunction(result)) {
         return {
-          content: listExprToString(result),
+          content: exprToString(result),
           hint: 'FilthFunction',
           id: crypto.randomUUID(),
           type: 'output'
         };
       }
-      // log.debug('[exec] result!!', listExprToString(result));
+      // log.debug('[exec] result!!', exprToString(result));
       if (isFilthExpr(result)) {
         return {
-          content: listExprToString(result),
+          content: exprToString(result),
           hint: 'FilthExpr',
           id: crypto.randomUUID(),
           type: 'output'

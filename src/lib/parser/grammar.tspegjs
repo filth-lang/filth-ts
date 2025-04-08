@@ -40,6 +40,7 @@ Expression
   / Quoted
   / Range
   / Regex
+  / Pointer
   / JSON
   / Atom
 
@@ -99,6 +100,7 @@ Boolean
   / "false" { return false }
   / "nil" { return null }
 
+
 // Numbers
 Number
   = minus? plus? int frac? exp? { return parseFloat(text()); }
@@ -146,11 +148,20 @@ Comment
 
 // Regex
 Regex
-  = "/" pattern:[^/]+ "/" flags:[ig]* {
-    const regexStr = pattern.join("");
+  = "/" pattern:(!("/" [ig]*) .)+ "/" flags:[ig]* {
+    const regexStr = pattern.map(([_, char]) => char).join("");
     const flagStr = flags.join("");
     return makeRegex(regexStr, flagStr);
   }
+
+// Pointer
+Pointer
+  = "//" first:PointerSegment rest:("/" segment:PointerSegment)* {
+    return { path: "/" + text().slice(2), type: 'pointer' };
+  }
+
+PointerSegment
+  = [^/]+
 
 // JSON
 JSON

@@ -27,15 +27,36 @@ describe('Filth', () => {
         `{"lang": "filth"} {"isFilthy": true}`,
         createFilthJSON({ isFilthy: true, lang: 'filth' })
       ]
-    ])('json %p should evalute to %p', async (expr, expected) => {
+    ])('json %s should evalute to %o', async (expr, expected) => {
+      expect(await env.eval(expr)).toEqual(expected);
+    });
+
+    test.each([
+      // [`'(a b c)`, `(a b c)`],
+      [`(select "lang" { lang: filth } )`, '"filth"'],
+      [`(select "/lang" { lang: filth } )`, '"filth"'],
+      [`(select "/1" [ a, b, c ] )`, '"b"'],
+      // [`(select //1 [ a, b, c ] )`, '"b"'],
+      [`(select "/2" '( "a" "b" "c" ))`, '"c"'],
+      [`(select "/2/name" [ a, b, { name: bob } ] )`, '"bob"'],
+      [`select "/0/name" ( { name: "alice" } "bob" "clive" ) `, '"alice"']
+    ])('%s should evalute to %s', async (expr, expected) => {
       expect(await env.eval(expr)).toEqual(expected);
     });
 
     it.skip('should perform json operations', async () => {
       await env.eval(`
 
+        (log (select /id props ))
+        ; "room"
+        
+        (log (select /1 [ a b c ]))
+        ; "b"
+        
+        (log (select /1/name [ a b c: { name: bob } ]))
+        ; "b"
 
-        (get { lang: filth} "lang")
+        (select "lang" { lang: filth } )
         ; "filth"
 
         (update { lang: typescript} "lang" "filth")

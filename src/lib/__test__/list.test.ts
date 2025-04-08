@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { createEnv, EvalEnvironment } from '../env/create';
+import { createEnv, EvalEnvironment } from '@filth/env/create';
+
+import { createFilthList } from '../helpers';
 
 describe('Filth', () => {
   describe('Lists', () => {
@@ -15,10 +17,7 @@ describe('Filth', () => {
     });
 
     it('should return a quoted list', async () => {
-      expect(await env.eval("'(1 2 3)")).toEqual({
-        elements: [1, 2, 3],
-        type: 'list'
-      });
+      expect(await env.eval("'(1 2 3)")).toEqual(createFilthList([1, 2, 3]));
     });
 
     it.skip('should throw error with undefined symbol', async () => {
