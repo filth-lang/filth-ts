@@ -42,5 +42,14 @@ describe('Filth', () => {
     ])('%s should evalute to %s', async (expr, expected) => {
       expect(await env.eval(expr)).toEqual(expected);
     });
+
+    // test.each([
+    //   [
+    //     `select //lang (update { lang: "typescript" } //lang "filth")`,
+    //     `"typescript"`
+    //   ]
+    // ])('%s should evalute to %s', async (expr, expected) => {
+    //   expect(await env.eval(expr)).toEqual(expected);
+    // });
   });
 });

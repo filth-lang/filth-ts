@@ -12,6 +12,8 @@ import { parse } from '@filth/parser/index';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
+import { evalSelect } from '../eval/list/select';
+
 const log = createLog('filth');
 
 export class EvalEnvironment extends Environment {
@@ -56,7 +58,16 @@ export const createEnv = (): EvalEnvironment => {
   // Conversions
   defineConversions(env);
 
+  // Pointer functions
+  definePointerFunctions(env);
+
   return env;
+};
+
+const definePointerFunctions = (env: EvalEnvironment) => {
+  env.define('select', (...args: FilthExpr[]) => evalSelect(env, args), {
+    skipEvaluateArgs: true
+  });
 };
 
 const defineLogging = (env: EvalEnvironment) => {

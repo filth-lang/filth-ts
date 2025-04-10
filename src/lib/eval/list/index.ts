@@ -3,7 +3,9 @@
 import { matchParams, type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
+import { doesFilthPointerMatch } from '@filth/fns/pointer';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
+import { doesFilthRegexMatch } from '@filth/fns/regex';
 import {
   createFilthList,
   isFilthBasicValue,
@@ -21,8 +23,6 @@ import {
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 
-import { doesFilthPointerMatch } from '../../fns/pointer';
-import { doesFilthRegexMatch } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalJSON } from './json';
@@ -30,7 +30,6 @@ import { evalLambda } from './lambda';
 import { evalLet } from './let';
 import { evalRange } from './range';
 import { evalRegex } from './regex';
-import { evalSelect } from './select';
 
 const log = createLog('eval/list');
 
@@ -130,8 +129,6 @@ export const evalList = async (
       case 'lambda':
         return evalLambda(env, args);
 
-      case 'select':
-        return evalSelect(env, args);
       case '=': {
         const [a, b] = args;
         const evaluatedA = await evaluate(env, a);
