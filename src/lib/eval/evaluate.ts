@@ -1,7 +1,17 @@
 import { type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evalList } from '@filth/eval/list/index';
-import { isFilthBasicValue, isFilthList, isFilthString } from '@filth/helpers';
+import {
+  createFilthList,
+  isFilthBasicValue,
+  isFilthJSON,
+  isFilthList,
+  isFilthObject,
+  isFilthQuotedExpr,
+  isFilthRange,
+  isFilthRegex,
+  isFilthString
+} from '@filth/helpers';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -41,30 +51,23 @@ export const evaluate = async (
     return value;
   }
 
-  if ('type' in expr) {
-    if (expr.type === 'quoted') {
+  if (isFilthObject(expr)) {
+    if (isFilthQuotedExpr(expr)) {
       if (isFilthList(expr.expr)) {
         const result = await Promise.all(
           expr.expr.elements.map(async e => await evaluate(env, e))
         );
-        return {
-          elements: result,
-          type: 'list'
-        };
+        return createFilthList(result);
       }
       return expr.expr;
     }
 
-    if (expr.type === 'list') {
+    if (isFilthList(expr)) {
       // log.debug('[evaluate] list', exprToString(expr));
       return evalList(env, expr);
     }
 
-    if (
-      expr.type === 'range' ||
-      expr.type === 'regex' ||
-      expr.type === 'json'
-    ) {
+    if (isFilthRange(expr) || isFilthRegex(expr) || isFilthJSON(expr)) {
       return expr;
     }
   }

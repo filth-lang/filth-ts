@@ -23,12 +23,8 @@ export const createFilthList = (elements: FilthExpr[]): FilthList => ({
   type: 'list'
 });
 
-export const getFilthType = (expr: FilthExpr): string => {
-  if (isFilthBasicValue(expr)) {
-    return typeof expr;
-  }
-  return typeof expr === 'object' && 'type' in expr ? expr.type : typeof expr;
-};
+export const getFilthType = (expr: FilthExpr): string =>
+  isFilthObject(expr) ? expr.type : typeof expr;
 
 export const isFilthEnv = (expr: unknown): expr is Environment =>
   // eslint-disable-next-line @nkzw/no-instanceof
@@ -51,7 +47,7 @@ export const isFilthNil = (expr: unknown): expr is FilthNil =>
   expr === undefined ||
   (typeof expr === 'object' && 'type' in expr && expr.type === 'nil');
 
-const isFilthObject = (expr: unknown): expr is FilthObject =>
+export const isFilthObject = (expr: unknown): expr is FilthObject =>
   expr !== null && typeof expr === 'object' && 'type' in expr;
 
 export const isFilthList = (expr: unknown): expr is FilthList =>
