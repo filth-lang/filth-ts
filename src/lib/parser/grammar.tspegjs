@@ -157,11 +157,15 @@ Regex
 // Pointer
 Pointer
   = "//" first:PointerSegment rest:("/" segment:PointerSegment)* {
-    return { path: "/" + text().slice(2), type: 'pointer' };
+    const segments = [first];
+    for (const [_, segment] of rest) {
+      segments.push(segment);
+    }
+    return { path: '/' + segments.join('/'), type: 'pointer' };
   }
 
 PointerSegment
-  = [^/]+
+  = Symbol / Number
 
 // JSON
 JSON

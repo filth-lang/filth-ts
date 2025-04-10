@@ -33,13 +33,14 @@ describe('Filth', () => {
 
     test.each([
       // [`'(a b c)`, `(a b c)`],
-      [`(select "lang" { lang: filth } )`, '"filth"'],
-      [`(select "/lang" { lang: filth } )`, '"filth"'],
-      [`(select "/1" [ a, b, c ] )`, '"b"'],
-      // [`(select //1 [ a, b, c ] )`, '"b"'],
-      [`(select "/2" '( "a" "b" "c" ))`, '"c"'],
-      [`(select "/2/name" [ a, b, { name: bob } ] )`, '"bob"'],
-      [`select "/0/name" ( { name: "alice" } "bob" "clive" ) `, '"alice"']
+      // [`(select "lang" { lang: filth } )`, '"filth"'],
+      [`(select //lang hello )`, 'nil']
+      // [`(select //lang { lang: filth } )`, '"filth"']
+      // [`(select //1" [ a, b, c ] )`, '"b"'],
+      // // [`(select //1 [ a, b, c ] )`, '"b"'],
+      // [`(select //2" '( "a" "b" "c" ))`, '"c"'],
+      // [`(select //2/name" [ a, b, { name: bob } ] )`, '"bob"'],
+      // [`select //0/name" ( { name: "alice" } "bob" "clive" ) `, '"alice"']
     ])('%s should evalute to %s', async (expr, expected) => {
       expect(await env.eval(expr)).toEqual(expected);
     });

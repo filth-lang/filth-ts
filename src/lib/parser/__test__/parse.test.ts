@@ -2,6 +2,8 @@ import { describe, expect, it, test } from 'vitest';
 
 import { exprToJson } from '@filth/__test__/helpers';
 import { ParseError } from '@filth/error';
+import { createFilthPointer } from '@filth/fns/pointer';
+import { createFilthList } from '@filth/helpers';
 import { FilthJSON, FilthPointer, FilthRange, FilthRegex } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -159,6 +161,15 @@ describe('Filth', () => {
         ['//1/two/0', { path: '/1/two/0', type: 'pointer' }]
       ])('should handle pointer %s', (input, expected) => {
         expect(parse(input)).toEqual(expected as FilthPointer);
+      });
+
+      test('parse pointer with a list', () => {
+        expect(parse('//1 (a b c)')).toEqual(
+          createFilthList([
+            createFilthPointer('/1'),
+            createFilthList(['a', 'b', 'c'])
+          ])
+        );
       });
     });
   });

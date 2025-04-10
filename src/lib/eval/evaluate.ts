@@ -7,6 +7,7 @@ import {
   isFilthJSON,
   isFilthList,
   isFilthObject,
+  isFilthPointer,
   isFilthQuotedExpr,
   isFilthRange,
   isFilthRegex,
@@ -29,7 +30,7 @@ export const evaluate = async (
 ): Promise<FilthExpr> => {
   // log.debug('[evaluate]', exprToString(expr));
 
-  if (isFilthBasicValue(expr)) {
+  if (isFilthBasicValue(expr) || expr === undefined) {
     // a number, boolean, or null
     return expr;
   }
@@ -67,7 +68,12 @@ export const evaluate = async (
       return evalList(env, expr);
     }
 
-    if (isFilthRange(expr) || isFilthRegex(expr) || isFilthJSON(expr)) {
+    if (
+      isFilthRange(expr) ||
+      isFilthRegex(expr) ||
+      isFilthJSON(expr) ||
+      isFilthPointer(expr)
+    ) {
       return expr;
     }
   }

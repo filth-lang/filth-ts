@@ -158,6 +158,14 @@ export const checkRestParams = (params: FilthExpr[]) => {
   return { hasRest, parameters, restParam };
 };
 
+export const wrapBasicValue = (value: FilthBasicValue): FilthExpr => {
+  if (value === null || value === undefined) {
+    return 'nil';
+  }
+
+  return value;
+};
+
 export const unwrapFilthList = (expr: FilthExpr | FilthExpr[]): FilthExpr[] => {
   if (isFilthList(expr)) {
     return expr.elements.flatMap(unwrapFilthList);
@@ -195,6 +203,9 @@ export const exprToString = (expr: unknown): string => {
   }
   if (isFilthJSON(expr)) {
     return JSON.stringify(expr.json);
+  }
+  if (isFilthPointer(expr)) {
+    return `/${expr.path}`;
   }
 
   return JSON.stringify(expr);

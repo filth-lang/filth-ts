@@ -11,6 +11,7 @@ import {
   isFilthJSON,
   isFilthList,
   isFilthNumber,
+  isFilthPointer,
   isFilthRange,
   isFilthRegex,
   isFilthString,
@@ -20,6 +21,7 @@ import {
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 
+import { doesFilthPointerMatch } from '../../fns/pointer';
 import { doesFilthRegexMatch } from '../../fns/regex';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
@@ -141,6 +143,10 @@ export const evalList = async (
 
         if (isFilthRegex(evaluatedA)) {
           return doesFilthRegexMatch(evaluatedA, evaluatedB);
+        }
+
+        if (isFilthPointer(evaluatedA)) {
+          return doesFilthPointerMatch(evaluatedA, evaluatedB);
         }
 
         return evaluatedA === evaluatedB;
