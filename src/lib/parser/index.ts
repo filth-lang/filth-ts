@@ -1,5 +1,4 @@
 import { ParseError } from '@filth/error';
-import { isFilthList } from '@filth/helpers';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -22,17 +21,4 @@ export const parse = (input: string): FilthExpr => {
     }
     throw error;
   }
-};
-
-export const parseLambdaParams = (params: FilthExpr): string[] => {
-  if (!isFilthList(params)) {
-    throw new ParseError('Lambda parameters must be a list');
-  }
-
-  return params.elements.map(param => {
-    if (typeof param !== 'string') {
-      throw new ParseError('Lambda parameters must be symbols');
-    }
-    return param;
-  });
 };

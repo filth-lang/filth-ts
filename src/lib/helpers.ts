@@ -190,7 +190,7 @@ export const exprToString = (expr: unknown): string => {
     return `( ${expr.elements.map(exprToString).join(' ')} )`;
   }
   if (isFilthFunction(expr)) {
-    return `( lambda (${expr.params.map(param => param).join(' ')}) ${exprToString(expr.body)} )`;
+    return `(fn (${expr.params.map(param => param).join(' ')}) ${exprToString(expr.body)})`;
   }
   if (isFilthBuiltinFunction(expr)) {
     return `#<builtin ${expr.name}>`;

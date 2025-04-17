@@ -12,7 +12,7 @@ describe('Filth', () => {
 
     it('should handle rest apply', async () => {
       const input = `
-      (def (sum x y z)
+      (def sum (x y z)
         (+ x y z))
       (apply sum '(1 2 3))
       `;

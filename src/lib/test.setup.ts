@@ -182,14 +182,30 @@ const toEqualFilthRange = (actual: unknown, expected: FilthRange) => {
   };
 };
 
+const toBeFilthFunction = (actual: unknown) => {
+  if (!isFilthFunction(actual as FilthExpr)) {
+    return {
+      message: () => `expected ${actual} to be a Filth function`,
+      pass: false
+    };
+  }
+
+  return {
+    message: () => `expected ${actual} to be a Filth function`,
+    pass: true
+  };
+};
+
 expect.extend({
   envToContain,
+  toBeFilthFunction,
   toEqualFilthList,
   toEqualFilthRange
 });
 
 interface CustomMatchers<T = unknown> {
   envToContain(symbol: unknown, expected: unknown): T;
+  toBeFilthFunction(): T;
   toEqualFilthList(expected: FilthList | FilthExpr[]): T;
   toEqualFilthRange(expected: FilthRange): T;
 }

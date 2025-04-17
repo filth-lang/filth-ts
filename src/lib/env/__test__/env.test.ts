@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, test } from 'vitest';
 
 import { createEnv } from '@filth/env/create';
-import { Environment, matchParams } from '@filth/env/env';
+import { Environment, matchExprs } from '@filth/env/env';
 import { parse } from '@filth/parser/index';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -47,7 +47,7 @@ describe('Filth', () => {
       expect(() => env.lookup('x')).toThrow('Undefined symbol: x');
     });
 
-    describe('matchParams', () => {
+    describe('matchExprs', () => {
       test.each([
         [`(12)`, `(12)`, {}],
         [`(12)`, `(25)`, false],
@@ -78,12 +78,26 @@ describe('Filth', () => {
         const paramsList = (parse(params)! as FilthList).elements;
         const argsList = (parse(args)! as FilthList).elements;
 
-        // log.debug('[matchParams]', paramsList, argsList);
+        // log.debug('[matchExprs]', paramsList, argsList);
 
-        const result = matchParams(paramsList, argsList);
+        const result = matchExprs(paramsList, argsList);
 
         expect(result).toEqual(expected);
       });
+
+      // test.each([
+      //   [`//path`, `//path`, {}],
+      //   [`//id`, `{ id: "room"}`, { match: '"room"' }]
+      // ])('%s matches %s -> %j', async (params, args, expected) => {
+      //   const paramsList = [parse(params)];
+      //   const argsList = [parse(args)];
+
+      //   log.debug('[matchExprs]', params, argsList);
+
+      //   const result = matchExprs(paramsList, argsList);
+
+      //   expect(result).toEqual(expected);
+      // });
     });
   });
 });

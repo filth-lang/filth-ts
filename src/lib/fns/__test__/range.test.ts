@@ -63,7 +63,7 @@ describe('Filth', () => {
       expect(
         await env.eval(`
         
-          (0..5 (=> (x) (+ x 10)))
+          (0..5 (fn (x) (+ x 10)))
         
         `)
       ).toEqualFilthList([10, 11, 12, 13, 14, 15]);

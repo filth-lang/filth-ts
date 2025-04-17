@@ -1,8 +1,9 @@
 /* eslint-disable no-case-declarations */
 
-import { matchParams, type Environment } from '@filth/env/env';
+import { matchExprs, type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
+import { evalFilthFunction, evalLambda } from '@filth/fns/fn';
 import { doesFilthPointerMatch } from '@filth/fns/pointer';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
 import { doesFilthRegexMatch } from '@filth/fns/regex';
@@ -14,6 +15,7 @@ import {
   isFilthList,
   isFilthNumber,
   isFilthPointer,
+  isFilthQuotedString,
   isFilthRange,
   isFilthRegex,
   isFilthString,
@@ -26,7 +28,6 @@ import { createLog } from '@helpers/log';
 import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalJSON } from './json';
-import { evalLambda } from './lambda';
 import { evalLet } from './let';
 import { evalRange } from './range';
 import { evalRegex } from './regex';
@@ -37,17 +38,25 @@ export const evalList = async (
   env: Environment,
   expr: FilthList
 ): Promise<FilthExpr> => {
+  if (!expr.elements.length) {
+    return null;
+  }
+
   const [operator, ...args] = expr.elements;
 
-  // log.debug('operator', exprToString(operator));
+  // log.debug('operator', operator);
 
-  if (isFilthList(operator)) {
-    let result: FilthExpr | null = null;
-    for (const e of expr.elements) {
-      result = await evaluate(env, e);
-    }
-    return result;
-  }
+  // if (isFilthList(operator)) {
+  //   let result: FilthExpr | null = null;
+  //   log.debug('evaluating list els', exprToString(expr));
+  //   for (const e of expr.elements) {
+  //     log.debug('eval list el', exprToString(e));
+  //     result = await evaluate(env, e);
+  //     log.debug('eval list el result', result);
+  //   }
+  //   // debugger;
+  //   return result;
+  // }
 
   // Handle multiple top-level expressions by treating them as a begin expression
   // if (expr.elements.length > 0 && !isFilthString(expr.elements[0])) {
@@ -61,11 +70,29 @@ export const evalList = async (
 
   // log.debug('operator', exprToString(expr));
 
-  if (!operator) {
-    return null;
+  // log.debug('operator', operator);
+
+  // if (isFilthFunction(operator)) {
+  //   return evalFilthFunction(env, operator);
+  // }
+
+  // if (isFilthQuotedString(operator)) {
+  //   return operator;
+  // }
+
+  if (isFilthRange(operator)) {
+    return evalRange(env, operator, args);
   }
 
-  if (isFilthString(operator)) {
+  if (isFilthRegex(operator)) {
+    return evalRegex(env, operator, args);
+  }
+
+  if (isFilthJSON(operator)) {
+    return evalJSON(env, operator, args);
+  }
+
+  if (isFilthString(operator) && !isFilthQuotedString(operator)) {
     switch (operator) {
       case 'def':
       case 'define':
@@ -125,8 +152,8 @@ export const evalList = async (
         const val = await evaluate(env, args[0]);
         return isFilthList(val) && val.elements.length === 0;
 
-      case '=>':
-      case 'lambda':
+      case 'fn':
+        // log.debug('[evalList] fn', args);
         return evalLambda(env, args);
 
       case '=': {
@@ -157,7 +184,7 @@ export const evalList = async (
           throw new EvaluationError('~ requires two lists');
         }
 
-        const result = matchParams(a.elements, b.elements);
+        const result = matchExprs(a.elements, b.elements);
         // log.debug('[eval] ~ result', result);
 
         return !!result;
@@ -203,6 +230,8 @@ export const evalList = async (
         return evalLet(env, args);
 
       default:
+        // not a built-in operator, but might be an env defined operator
+
         // log.debug('[evaluate] operator', operator, args);
         // log.debug('[evaluate] bindings', Array.from(env.getBindings().keys()));
         // For non-special forms, evaluate the operator and apply it
@@ -246,7 +275,7 @@ export const evalList = async (
           //   evaluatedArgs.flatMap(unwrapFilthList)
           // );
 
-          const match = matchParams(
+          const match = matchExprs(
             fn.params,
             evaluatedArgs.flatMap(unwrapFilthList)
           );
@@ -272,55 +301,73 @@ export const evalList = async (
           );
         }
     }
-  } else {
-    // If the operator is not a string, evaluate it and apply it
-    const fn = await evaluate(env, operator);
+  } //else {
 
-    if (isFilthBasicValue(fn)) {
-      let result: FilthExpr | null = null;
-      for (const e of expr.elements) {
-        result = await evaluate(env, e);
-      }
-      return result;
+  let result: FilthExpr | null = null;
+  for (const e of expr.elements) {
+    // log.debug('eval list el', exprToString(e));
+    result = await evaluate(env, e);
+
+    if (isFilthFunction(result)) {
+      // log.debug('[evalList] fn', exprToString(expr));
+      result = await evalFilthFunction(env, result);
     }
-    // log.debug('[evaluate] operator', operator);
-
-    // log.debug('[operator] evaluating operator', operator, 'result', null);
-    if (isFilthFunction(fn)) {
-      // Handle lambda function application
-      const newEnv = fn.env.create();
-      const evaluatedArgs = await Promise.all(
-        args.map(async arg => await evaluate(env, arg))
-      );
-      log.debug('[apply] lambda params', fn.params);
-      fn.params.forEach((param: FilthExpr, i: number) => {
-        newEnv.define(param as string, evaluatedArgs[i]);
-      });
-      return evaluate(newEnv, fn.body);
-    }
-
-    if (isFilthRange(fn)) {
-      return evalRange(env, fn, args);
-    }
-
-    if (isFilthRegex(fn)) {
-      return evalRegex(env, fn, args);
-    }
-
-    if (isFilthJSON(fn)) {
-      return evalJSON(env, fn, args);
-    }
-
-    if (typeof fn === 'function') {
-      // Handle built-in functions
-      const evaluatedArgs = await Promise.all(
-        args.map(async arg => await evaluate(env, arg))
-      );
-      return fn(...evaluatedArgs);
-    }
-
-    throw new EvaluationError(
-      `Cannot apply ${JSON.stringify(fn)} as a function`
-    );
   }
+  // debugger;
+  return result;
+  // }
+  // else {
+  //   log.debug('[evalList] operator eval', exprToString(operator));
+  //   // If the operator is not a string, evaluate it and apply it
+  //   const fn = await evaluate(env, operator);
+
+  //   log.debug('[evalList] operator eval result', exprToString(fn));
+
+  //   if (isFilthBasicValue(fn)) {
+  //     let result: FilthExpr | null = null;
+  //     for (const e of expr.elements) {
+  //       result = await evaluate(env, e);
+  //     }
+  //     return result;
+  //   }
+  //   // log.debug('[evaluate] operator', operator);
+
+  //   // log.debug('[operator] evaluating operator', operator, 'result', null);
+  //   // if (isFilthFunction(fn)) {
+  //   //   // Handle lambda function application
+  //   //   const newEnv = fn.env.create();
+  //   //   const evaluatedArgs = await Promise.all(
+  //   //     args.map(async arg => await evaluate(env, arg))
+  //   //   );
+  //   //   log.debug('[apply] lambda params', fn.params);
+  //   //   fn.params.forEach((param: FilthExpr, i: number) => {
+  //   //     newEnv.define(param as string, evaluatedArgs[i]);
+  //   //   });
+  //   //   return evaluate(newEnv, fn.body);
+  //   // }
+
+  //   if (isFilthRange(fn)) {
+  //     return evalRange(env, fn, args);
+  //   }
+
+  //   if (isFilthRegex(fn)) {
+  //     return evalRegex(env, fn, args);
+  //   }
+
+  //   if (isFilthJSON(fn)) {
+  //     return evalJSON(env, fn, args);
+  //   }
+
+  //   if (typeof fn === 'function') {
+  //     // Handle built-in functions
+  //     const evaluatedArgs = await Promise.all(
+  //       args.map(async arg => await evaluate(env, arg))
+  //     );
+  //     return fn(...evaluatedArgs);
+  //   }
+
+  //   throw new EvaluationError(
+  //     `Cannot apply ${JSON.stringify(fn)} as a function`
+  //   );
+  // }
 };

@@ -4,7 +4,7 @@ import { createEnv, EvalEnvironment } from '@filth/env/create';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
-const log = createLog('fns/def');
+const log = createLog('test/def');
 
 describe('Filth', () => {
   describe('def', () => {
@@ -19,11 +19,34 @@ describe('Filth', () => {
       });
     });
 
+    test('define a constant', async () => {
+      await env.eval(`(def x 10)`);
+      expect(env).envToContain('x', 10);
+    });
+    test('define a constant', async () => {
+      const result = await env.eval(`
+        (def foo 45)
+        (def bar 15)
+        (+ foo bar)
+        `);
+      expect(result).toBe(60);
+    });
+
+    test('a function expression', async () => {
+      expect(await env.eval(`(fn () ("hello world") )`)).toBeFilthFunction();
+    });
+
+    test('a function expression in a list evaluates', async () => {
+      expect(await env.eval(`((fn () ("hello world") ))`)).toEqual(
+        '"hello world"'
+      );
+    });
+
     test.each([
       // [`"filth"`, 'filth'],
       [`def hello "nice"`, 'hello', '"nice"'],
-      [`def (mult x) (* x 2)`, 'mult', { body: ['*', 'x', 2], params: ['x'] }]
-    ])('json %p should evalute to %p', async (expr, symbol, expected) => {
+      [`def mult x (* x 2)`, 'mult', { body: ['*', 'x', 2], params: ['x'] }]
+    ])('%p should evalute to %p', async (expr, symbol, expected) => {
       await env.eval(expr);
       expect(env).envToContain(symbol, expected);
     });
@@ -31,8 +54,8 @@ describe('Filth', () => {
     test('overloading def functions with constant string args', async () => {
       const result = await env.eval(`
       
-        (def (hello "world") '("saying hello to world"))
-        (def (hello "moon") '("saying hello to moon"))
+        (def hello "world" '("saying hello to world"))
+        (def hello "moon" '("saying hello to moon"))
         
         (hello "world")
       `);
@@ -43,8 +66,12 @@ describe('Filth', () => {
     test('overloading def functions with constant numeric args', async () => {
       const result = await env.eval(`
       
-        (def (age 12) '("child"))
-        (def (age 25) '("adult"))
+        ; TODO change to this form
+        ; (def hello (fn (name) (str "Hello " name)))
+        ; (def hello (name) (str "Hello " name))
+
+        (def age 12 '("child"))
+        (def age 25 '("adult"))
         
         (age 12)
       `);
@@ -55,8 +82,8 @@ describe('Filth', () => {
     test('overloading def functions with args', async () => {
       const result = await env.eval(`
       
-        (def (arith "mul" x y) (* x y))
-        (def (arith "add" x y) (+ x y))
+        (def arith ("mul" x y) (* x y))
+        (def arith ("add" x y) (+ x y))
         
         (arith "mul" 2 3)
       `);
@@ -67,8 +94,8 @@ describe('Filth', () => {
     test('overloading def functions with regex args', async () => {
       const result = await env.eval(`
       
-        (def (open /door/ ) "opened")
-        (def (open /(?<val>window)/ ) (+ "the " val " cannot be opened"))
+        (def open /door/  "opened")
+        (def open /(?<val>window)/ (+ "the " val " cannot be opened"))
         
         (open "window")
       `);
@@ -79,7 +106,7 @@ describe('Filth', () => {
     it('should handle rest parameters in def', async () => {
       const input = `
       ; Function that takes rest parameters
-      (def (sum first ... rest)
+      (def sum (first ... rest)
         (if (null? rest)
             first
             (+ first (sum rest))))
@@ -92,17 +119,17 @@ describe('Filth', () => {
     });
 
     it('def fn', async () => {
-      await env.eval(`def (fn x) (+ x 1)`);
-      const result = await env.eval('fn 1');
+      await env.eval(`def inc (fn (x) (+ x 1))`);
+      const result = await env.eval('inc 1');
       expect(result).toBe(2);
     });
 
     it('one shot def fn', async () => {
-      const result = await env.eval(`(def (foo x) (+ x 2)) (foo 2)`);
+      const result = await env.eval(`(def foo (x) (+ x 2)) (foo 2)`);
       expect(result).toBe(4);
     });
 
-    it.skip('should perform json operations', async () => {
+    it.skip('should function', async () => {
       await env.eval(`
 
         def foo 45
@@ -110,7 +137,7 @@ describe('Filth', () => {
         (+ foo bar)
         ; 60
 
-        def (mult x) (* x 2)
+        defn mult (x) (* x 2)
         (mult 10)
         ; 20
 

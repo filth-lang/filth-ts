@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { createEnv } from '../env/create';
 
 describe('Filth', () => {
@@ -26,7 +27,7 @@ describe('Filth', () => {
 
     it('should evaluate lambda expressions', async () => {
       const testEnv = createEnv();
-      await testEnv.eval('(define double (lambda (x) (* x 2)))');
+      await testEnv.eval('(define double (fn (x) (* x 2)))');
       expect(await testEnv.eval('(double 21)')).toBe(42);
     });
 
@@ -44,7 +45,7 @@ describe('Filth', () => {
       await env.eval(
         `(define 
           wait-and-log 
-          (lambda () 
+          (fn () 
             (wait 100) 
             (log "Hello, world!")))`
       );

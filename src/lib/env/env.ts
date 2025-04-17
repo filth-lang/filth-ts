@@ -114,7 +114,7 @@ export const findBinding = (
 
   for (const binding of bindings) {
     if (isFilthFunction(binding.value)) {
-      const result = matchParams(binding.value.params, args);
+      const result = matchExprs(binding.value.params, args);
       // log.debug('[findBinding] comparing', binding.value.params, args, result);
       if (result) {
         return binding;
@@ -123,13 +123,13 @@ export const findBinding = (
   }
 };
 
-export const matchParams = (
+export const matchExprs = (
   params: FilthExpr[],
   args: FilthExpr[]
 ): Record<string, FilthExpr | FilthExpr[]> | false => {
   const hasRest = params.includes('...');
   if (!hasRest && params.length !== args.length) {
-    // log.debug('[matchParams] params and args length mismatch', params, args);
+    // log.debug('[matchExprs] params and args length mismatch', params, args);
     return false;
   }
 
@@ -139,7 +139,7 @@ export const matchParams = (
     const param = params[ii];
 
     if (param === '...') {
-      // log.debug('[matchParams] param is .', params, args);
+      // log.debug('[matchExprs] param is .', params, args);
 
       const rest: FilthExpr[] = [];
       const restParam = params[ii + 1];
@@ -150,11 +150,11 @@ export const matchParams = (
       const restArgs = args.slice(ii);
       const restMap: Record<string, FilthExpr> = {};
       for (const arg of restArgs) {
-        // log.debug('[matchParams] rest arg', restParam, arg);
+        // log.debug('[matchExprs] rest arg', restParam, arg);
         if (matchParam(restMap, restParam, arg, true)) {
           rest.push(arg);
         }
-        // log.debug('[matchParams] rest map', restMap);
+        // log.debug('[matchExprs] rest map', restMap);
       }
 
       const restKey = typeof restParam === 'string' ? restParam : ':tail';
@@ -176,7 +176,7 @@ export const matchParams = (
     }
   }
 
-  // log.debug('[matchParams] no match', params, args);
+  // log.debug('[matchExprs] no match', params, args);
   return result;
 };
 

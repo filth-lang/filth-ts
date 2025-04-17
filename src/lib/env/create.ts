@@ -8,7 +8,7 @@ import {
   isFilthString,
   removeQuotes
 } from '@filth/helpers';
-import { parse } from '@filth/parser/index';
+import { parse } from '@filth/parser';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
