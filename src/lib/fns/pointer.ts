@@ -8,11 +8,13 @@ import {
   isFilthQuotedExpr,
   isFilthString,
   removeQuotes,
-  unwrapFilthList
+  unwrapFilthList,
+  wrapBasicValue
 } from '@filth/helpers';
 import { FilthExpr, FilthPointer } from '@filth/types';
 import { createLog } from '@helpers/log';
 
+import { Environment } from '../env/env';
 import { EvaluationError } from '../error';
 
 const log = createLog('pointer');
@@ -35,6 +37,46 @@ export const doesFilthPointerMatch = (
 
   const result = evaluateFilthPointer(pointer, value);
   return result !== undefined;
+};
+
+export const evalFilthPointer = (
+  env: Environment,
+  pointerValue: FilthExpr,
+  args: FilthExpr[]
+) => {
+  const pointer = toFilthPointer(pointerValue);
+  let [value] = args;
+  if (isFilthQuotedExpr(value)) {
+    value = value.expr;
+  }
+
+  if (isFilthJSON(value)) {
+    const { data } = JsonPointerGet(value.json, pointer.path);
+    // log.debug('[evaluateFilthPointer] pointer', pointer);
+    // log.debug('[evaluateFilthPointer] value', data);
+    if (data === undefined) {
+      return undefined;
+    }
+    if (typeof data === 'string') {
+      return addQuotes(data);
+    }
+    return data;
+  }
+
+  if (isFilthList(value)) {
+    const { data } = JsonPointerGet(unwrapFilthList(value), pointer.path);
+    // log.debug('[evaluateFilthPointer] pointer', pointer);
+    // log.debug('[evaluateFilthPointer] value', unwrapFilthList(value));
+    if (data === undefined) {
+      return undefined;
+    }
+    if (isFilthString(data)) {
+      return addQuotes(data);
+    }
+    return data;
+  }
+
+  return wrapBasicValue(undefined);
 };
 
 export const evaluateFilthPointer = (

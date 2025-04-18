@@ -19,6 +19,9 @@ describe('Filth', () => {
     it.skip('should perform json operations', async () => {
       await env.eval(`
 
+      (cond (true "yes"))
+      ; "yes"
+      
       (cond (false 1) (true 2))
        ; 2
 
@@ -36,6 +39,20 @@ describe('Filth', () => {
         ((= 5 5) "yes")
       )
         ; "yes"
+
+      (fn x
+        (case x
+          (0 "zero")
+          (1.. "positive")
+          (else "negative")
+        )
+      )
+      (x 0)
+      ; "zero"
+
+      (x 101)
+      ; "positive"
+      
 
       (case (1 2 3)
         ((4 5 6) "this clause won't match")

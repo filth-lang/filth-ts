@@ -20,14 +20,14 @@ describe('Filth', () => {
 
     it('should evaluate variable definitions', async () => {
       const testEnv = createEnv();
-      await testEnv.eval('(define x 42)');
+      await testEnv.eval('(def x 42)');
       const result = await testEnv.eval('x');
       expect(result).toBe(42);
     });
 
     it('should evaluate lambda expressions', async () => {
       const testEnv = createEnv();
-      await testEnv.eval('(define double (fn (x) (* x 2)))');
+      await testEnv.eval('(def double (fn (x) (* x 2)))');
       expect(await testEnv.eval('(double 21)')).toBe(42);
     });
 
@@ -43,7 +43,7 @@ describe('Filth', () => {
     it('should handle promises', async () => {
       const env = createEnv();
       await env.eval(
-        `(define 
+        `(def 
           wait-and-log 
           (fn () 
             (wait 100) 
@@ -57,7 +57,7 @@ describe('Filth', () => {
       const start = Date.now();
 
       // Test sequential waits using begin
-      await env.eval('(begin (wait 50) (wait 50))');
+      await env.eval('( (wait 50) (wait 50) )');
       const end = Date.now();
       expect(end - start).toBeGreaterThanOrEqual(100);
 
@@ -70,7 +70,7 @@ describe('Filth', () => {
       // Test multiple sequential waits
       const startMulti = Date.now();
       await env.eval(`
-        (begin
+        (
           (wait 25)
           (wait 25)
           (wait 25)

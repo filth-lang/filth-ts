@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, test } from 'vitest';
 
 import { createEnv, EvalEnvironment } from '@filth/env/create';
+import { exprToString } from '@filth/helpers';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -13,8 +14,13 @@ describe('Filth', () => {
 
     beforeEach(() => {
       env = createEnv();
+      testResult = [];
       env.define('tr', (...args: FilthExpr[]) => {
         testResult = args;
+        return null;
+      });
+      env.define('print', (...args: FilthExpr[]) => {
+        testResult.push(exprToString(args));
         return null;
       });
     });
@@ -40,6 +46,26 @@ describe('Filth', () => {
       expect(await env.eval(`((fn () ("hello world") ))`)).toEqual(
         '"hello world"'
       );
+    });
+
+    test('multiple function expression in a list evaluates', async () => {
+      expect(
+        await env.eval(`
+        (fn () ( (print "hello") 2) ) 
+        (fn () ( (print "world") 3) )
+      `)
+      ).toEqual(3);
+
+      expect(testResult).toEqual(['"hello"', '"world"']);
+    });
+
+    test('expr of strings', async () => {
+      expect(
+        await env.eval(`
+        ("hello" "world" "hello world") 
+        
+      `)
+      ).toEqual('"hello world"');
     });
 
     test.each([

@@ -158,7 +158,9 @@ export const checkRestParams = (params: FilthExpr[]) => {
   return { hasRest, parameters, restParam };
 };
 
-export const wrapBasicValue = (value: FilthBasicValue): FilthExpr => {
+export const wrapBasicValue = (
+  value: FilthBasicValue | undefined
+): FilthExpr => {
   if (value === null || value === undefined) {
     return 'nil';
   }
@@ -206,6 +208,9 @@ export const exprToString = (expr: unknown): string => {
   }
   if (isFilthPointer(expr)) {
     return `/${expr.path}`;
+  }
+  if (Array.isArray(expr)) {
+    return expr.map(exprToString).join(' ');
   }
 
   return JSON.stringify(expr);

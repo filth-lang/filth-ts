@@ -1,12 +1,7 @@
 import { Environment, matchExprs } from '@filth/env/env';
 import { LambdaError, ParseError } from '@filth/error';
-import { evaluate } from '@filth/eval';
-import {
-  createFilthList,
-  exprToString,
-  isFilthList,
-  unwrapFilthList
-} from '@filth/helpers';
+import { evaluate } from '@filth/eval/index';
+import { createFilthList, isFilthList, unwrapFilthList } from '@filth/helpers';
 import { FilthExpr, FilthFunction } from '@filth/types';
 import { createLog } from '@helpers/log';
 
@@ -64,7 +59,7 @@ export const evalFilthFunction = async (
     }
   }
 
-  log.debug('[evaluate] body', exprToString(fn.body), fn.body);
+  // log.debug('[evaluate] body', exprToString(fn.body), fn.body);
 
   return evaluate(newEnv, fn.body);
 };

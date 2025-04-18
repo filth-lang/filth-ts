@@ -8,11 +8,9 @@ import {
   isFilthString,
   removeQuotes
 } from '@filth/helpers';
-import { parse } from '@filth/parser';
+import { parse } from '@filth/parser/index';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
-
-import { evalSelect } from '../eval/list/select';
 
 const log = createLog('filth');
 
@@ -41,7 +39,7 @@ export const createEnv = (): EvalEnvironment => {
   env.define('false', false);
 
   // placeholder, handling is in evaluate
-  env.define('apply', null);
+  // env.define('apply', null);
 
   // Basic arithmetic operations
   defineArithmetic(env);
@@ -59,16 +57,16 @@ export const createEnv = (): EvalEnvironment => {
   defineConversions(env);
 
   // Pointer functions
-  definePointerFunctions(env);
+  // definePointerFunctions(env);
 
   return env;
 };
 
-const definePointerFunctions = (env: EvalEnvironment) => {
-  env.define('select', (...args: FilthExpr[]) => evalSelect(env, args), {
-    skipEvaluateArgs: true
-  });
-};
+// const definePointerFunctions = (env: EvalEnvironment) => {
+//   env.define('select', (...args: FilthExpr[]) => evalSelect(env, args), {
+//     skipEvaluateArgs: true
+//   });
+// };
 
 const defineLogging = (env: EvalEnvironment) => {
   env.define(

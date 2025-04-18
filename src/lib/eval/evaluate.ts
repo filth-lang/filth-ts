@@ -22,7 +22,7 @@ import { evalFilthFunction } from '../fns/fn';
 
 const log = createLog('filth/eval');
 
-let depth = 0;
+// let depth = 0;
 
 /**
  * Evaluate a Filth expression
@@ -73,7 +73,7 @@ export const evaluate = async (
     }
 
     if (isFilthList(expr)) {
-      depth++;
+      // depth++;
       // log.debug(
       //   `[evaluate] entering list depth=${depth}, expr=${exprToString(expr)}`
       // );
@@ -82,7 +82,7 @@ export const evaluate = async (
       // log.debug(
       //   `🤦🏻‍♂️ depth=${depth}, ${exprToString(expr)} result ${isFilthFunction(listResult) ? 'fn' : 'list'} result=${exprToString(listResult)}`
       // );
-      depth--;
+      // depth--;
       return listResult;
     }
 
@@ -101,7 +101,7 @@ export const evaluate = async (
       isFilthJSON(expr) ||
       isFilthPointer(expr)
     ) {
-      log.debug(`[evaluate] special type=${expr.type}`);
+      // log.debug(`[evaluate] special type=${expr.type}`);
       return expr;
     }
   }

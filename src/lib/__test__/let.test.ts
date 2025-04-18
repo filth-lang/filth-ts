@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { createEnv } from '../env/create';
 
 describe('Filth', () => {
@@ -34,7 +35,7 @@ describe('Filth', () => {
     ).toBe(15);
 
     // // let should create a new scope
-    await env.eval('(define x 100)');
+    await env.eval('(def x 100)');
     expect(await env.eval('(let ((x 5)) (+ x x))')).toBe(10);
     expect(await env.eval('x')).toBe(100); // outer x should remain unchanged
   });

@@ -4,11 +4,10 @@ import { matchExprs, type Environment } from '@filth/env/env';
 import { EvaluationError } from '@filth/error';
 import { evaluate } from '@filth/eval/evaluate';
 import { evalFilthFunction, evalLambda } from '@filth/fns/fn';
-import { doesFilthPointerMatch } from '@filth/fns/pointer';
+import { doesFilthPointerMatch, evalFilthPointer } from '@filth/fns/pointer';
 import { createFilthRange, isFilthRangeIn } from '@filth/fns/range';
 import { doesFilthRegexMatch } from '@filth/fns/regex';
 import {
-  createFilthList,
   isFilthBasicValue,
   isFilthFunction,
   isFilthJSON,
@@ -19,13 +18,11 @@ import {
   isFilthRange,
   isFilthRegex,
   isFilthString,
-  isTruthy,
-  unwrapFilthList
+  isTruthy
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
 
-import { evalApply } from './apply';
 import { evalDefine } from './define';
 import { evalJSON } from './json';
 import { evalLet } from './let';
@@ -44,42 +41,6 @@ export const evalList = async (
 
   const [operator, ...args] = expr.elements;
 
-  // log.debug('operator', operator);
-
-  // if (isFilthList(operator)) {
-  //   let result: FilthExpr | null = null;
-  //   log.debug('evaluating list els', exprToString(expr));
-  //   for (const e of expr.elements) {
-  //     log.debug('eval list el', exprToString(e));
-  //     result = await evaluate(env, e);
-  //     log.debug('eval list el result', result);
-  //   }
-  //   // debugger;
-  //   return result;
-  // }
-
-  // Handle multiple top-level expressions by treating them as a begin expression
-  // if (expr.elements.length > 0 && !isFilthString(expr.elements[0])) {
-  //   // log.debug('[evaluate] begin', expr);
-  //   let result: FilthExpr | null = null;
-  //   for (const e of expr.elements) {
-  //     result = await evaluate(env, e);
-  //   }
-  //   return result;
-  // }
-
-  // log.debug('operator', exprToString(expr));
-
-  // log.debug('operator', operator);
-
-  // if (isFilthFunction(operator)) {
-  //   return evalFilthFunction(env, operator);
-  // }
-
-  // if (isFilthQuotedString(operator)) {
-  //   return operator;
-  // }
-
   if (isFilthRange(operator)) {
     return evalRange(env, operator, args);
   }
@@ -92,14 +53,14 @@ export const evalList = async (
     return evalJSON(env, operator, args);
   }
 
+  if (isFilthPointer(operator)) {
+    return evalFilthPointer(env, operator, args);
+  }
+
   if (isFilthString(operator) && !isFilthQuotedString(operator)) {
     switch (operator) {
       case 'def':
-      case 'define':
         return evalDefine(env, args);
-
-      case 'apply':
-        return evalApply(env, args);
 
       case 'if':
         const [condition, consequent, alternate] = args;
@@ -207,21 +168,6 @@ export const evalList = async (
           evaluatedEnd as number,
           evaluatedStep as number
         );
-
-        // return createFilthList(Array.from({ length: evaluatedEnd - evaluatedStart + 1 }, (_, i) => evaluatedStart + i));
-        // throw new EvaluationError('range not implemented');
-      }
-
-      // begin is a special form used to execute a sequence of expressions in order,
-      // returning the value of the last expression. It's primarily used to group
-      // multiple expressions together where only one expression is expected.
-      case 'begin': {
-        let result: FilthExpr | null = null;
-        // console.debug('[begin] expr', args);
-        for (const expr of args) {
-          result = await evaluate(env, expr);
-        }
-        return result;
       }
 
       // let is a special form used to create local bindings. It introduces a new scope
@@ -248,51 +194,10 @@ export const evalList = async (
           const evaluatedArgs = await Promise.all(
             args.map(async arg => await evaluate(env, arg))
           );
+
           return fn(...evaluatedArgs);
         } else if (isFilthFunction(fn)) {
-          // log.debug('[evaluate] lambda function', operator);
-          // Handle lambda function application
-
-          // note: the fn.env is the environment in which the lambda was defined
-          // but we want the lambda to be evaluated in the current environment
-          // const newEnv = fn.env.create();
-          const newEnv = env.create();
-          // log.debug(
-          //   '[evaluate] lambda bindings',
-          //   Array.from(newEnv.getBindings().keys())
-          // );
-
-          // bind regular parameters
-          const evaluatedArgs = await Promise.all(
-            args.map(async arg => await evaluate(env, arg))
-          );
-
-          // log.debug('[evaluate] lambda params', fn.params, 'with args', args);
-          // log.debug(
-          //   '[evaluate] lambda params',
-          //   fn.params,
-          //   'with evaluatedArgs',
-          //   evaluatedArgs.flatMap(unwrapFilthList)
-          // );
-
-          const match = matchExprs(
-            fn.params,
-            evaluatedArgs.flatMap(unwrapFilthList)
-          );
-          // log.debug('[evaluate] match', match);
-
-          for (const [key, value] of Object.entries(match)) {
-            // log.debug('[evaluate] lambda define', key, value);
-            if (Array.isArray(value)) {
-              newEnv.define(key, createFilthList(value));
-            } else {
-              newEnv.define(key, value);
-            }
-          }
-
-          // log.debug('[evaluate] lambda body', exprToString(fn.body));
-
-          return evaluate(newEnv, fn.body);
+          return evalFilthFunction(env, fn, args);
         } else if (isFilthBasicValue(fn)) {
           return fn;
         } else {
