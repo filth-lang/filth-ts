@@ -25,9 +25,9 @@ describe('Filth', () => {
       expect(result).toBe(42);
     });
 
-    it('should evaluate lambda expressions', async () => {
+    it('should evaluate fn expressions', async () => {
       const testEnv = createEnv();
-      await testEnv.eval('(def double (fn (x) (* x 2)))');
+      await testEnv.eval('(def double (x) (* x 2))');
       expect(await testEnv.eval('(double 21)')).toBe(42);
     });
 
