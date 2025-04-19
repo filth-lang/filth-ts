@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, it, test } from 'vitest';
 
 import { createEnv, EvalEnvironment } from '@filth/env/create';
 import { FilthExpr } from '@filth/types';
 import { createLog } from '@helpers/log';
+
+import { createFilthList } from '../../../helpers';
 
 const log = createLog('env');
 
@@ -27,8 +29,7 @@ describe('Filth', () => {
         [`= (12 25) (12)`, false],
         [`= (12 25) (12 25)`, true],
         [`= (12 25) (12 26)`, false],
-        [`= (12 25) (12 25 26)`, false],
-        [`~ (a b c) (1 2 3)`, true]
+        [`= (12 25) (12 25 26)`, false]
       ])('%s equals %o', async (expr, expected) => {
         const result = await env.eval(expr);
 
@@ -43,6 +44,16 @@ describe('Filth', () => {
         const result = await env.eval(expr);
 
         expect(result).toEqual(expected);
+      });
+
+      it('should define matches as local bindings', async () => {
+        const result = await env.eval(`
+          ~ (head ... tail) (1 2 3)
+        `);
+
+        expect(result).toEqual(true);
+        expect(env).envToContain('head', 1);
+        expect(env).envToContain('tail', createFilthList([2, 3]));
       });
     });
   });

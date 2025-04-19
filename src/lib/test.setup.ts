@@ -7,6 +7,7 @@ import { expect } from 'vitest';
 
 import {
   createFilthList,
+  exprToString,
   isFilthBasicValue,
   isFilthEnv,
   isFilthFunction,
@@ -60,6 +61,16 @@ const envToContain = (env: unknown, symbol: unknown, expected: unknown) => {
     return {
       message: () => `expected ${expected} to be an object`,
       pass: false
+    };
+  }
+
+  if (isFilthList(expected) && isFilthList(binding.value)) {
+    // log.debug('[envToContain]', expected, exprToString(expected));
+    // log.debug('[envToContain]', binding.value, exprToString(binding.value));
+    return {
+      message: () =>
+        `expected binding ${symbol} to equal ${exprToString(expected)}, not ${exprToString(binding.value)}`,
+      pass: exprToString(expected) == exprToString(binding.value)
     };
   }
 

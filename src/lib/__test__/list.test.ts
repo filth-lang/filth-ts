@@ -55,6 +55,13 @@ describe('Filth', () => {
       expect(await env.eval("(equal? '(1 2 3) '(1 2 3))")).toBe(true);
       expect(await env.eval("(equal? '(1 2) '(1 2 3))")).toBe(false);
     });
+
+    it('should add a list to a list', async () => {
+      expect(await env.eval("(+ '(1 2 3) '(4 5 6))")).toEqual({
+        elements: [1, 2, 3, 4, 5, 6],
+        type: 'list'
+      });
+    });
   });
 });
 

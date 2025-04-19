@@ -18,7 +18,8 @@ import {
   isFilthRange,
   isFilthRegex,
   isFilthString,
-  isTruthy
+  isTruthy,
+  valueToFilthExpr
 } from '@filth/helpers';
 import { FilthExpr, FilthList } from '@filth/types';
 import { createLog } from '@helpers/log';
@@ -147,6 +148,12 @@ export const evalList = async (
 
         const result = matchExprs(a.elements, b.elements);
         // log.debug('[eval] ~ result', result);
+
+        if (result) {
+          for (const [key, value] of Object.entries(result)) {
+            env.define(key, valueToFilthExpr(value));
+          }
+        }
 
         return !!result;
       }

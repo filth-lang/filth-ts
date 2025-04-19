@@ -215,3 +215,16 @@ export const exprToString = (expr: unknown): string => {
 
   return JSON.stringify(expr);
 };
+
+export const valueToFilthExpr = (value: unknown): FilthExpr => {
+  if (isFilthValue(value)) {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return createFilthList(value.map(valueToFilthExpr));
+  }
+  // if (isFilthObject(value)) {
+  //   return createFilthObject(value);
+  // }
+  throw new EvaluationError(`Cannot convert ${value} to a FilthExpr`);
+};
